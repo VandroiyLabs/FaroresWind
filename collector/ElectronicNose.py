@@ -1,6 +1,5 @@
 import serial
 import numpy as np
-import pylab as pl
 import json
 from datetime import datetime
 
