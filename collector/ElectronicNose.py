@@ -1,5 +1,3 @@
-import matplotlib as mpl
-mpl.use('Agg')
 import serial
 import numpy as np
 import pylab as pl
@@ -68,7 +66,7 @@ class ElectronicNose:
 
         return
 
-
+    
     def convert(self, string):
         s = []
         for j in range(8):
@@ -84,10 +82,6 @@ if __name__ == "__main__":
 
     # Acquiring some data
     EN.sniff(1000)
-
-    # Finally plotting
-    EN.plotClustered()
-    pl.savefig('Test.png')
 
     # Closing connection
     EN.closeConnection()
