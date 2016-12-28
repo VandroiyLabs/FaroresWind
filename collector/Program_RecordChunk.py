@@ -1,7 +1,6 @@
 import ElectronicNose as EN
 import signal
-import sys
-import time
+import sys, os, time
 import datetime
 import multiprocessing as mp
 import numpy as np
@@ -18,7 +17,7 @@ def collector(enose):
 
         if stopSwitch.value == 2:
             # updating shared array
-            np.save( 'sofar.npy', enose.memory[-2000:] )
+            np.save( 'recent.npy', enose.memory[-2000:] )
             stopSwitch.value = 1
 
         
@@ -67,17 +66,18 @@ while True:
     elif command == "plot" or command == "p":
         stopSwitch.value = 2
         time.sleep(2.)
-        sofar = np.load('sofar.npy')
+        sofar = np.load('recent.npy')
         timeaxis = sofar[:,0]/3600.
         pl.figure( figsize=(8,4) )
         for j in range(1,9):
             pl.plot(timeaxis, sofar[:,j])
-        pl.savefig("plot_sofar.png",dpi=100)
+        pl.savefig("plot_recent.png",dpi=100)
         pl.close()
         
     elif command == "stop" or command == "s":
         stopSwitch.value = 0
         sniffer.join()
+        os.system(" rm -f recent.npy plot_recent.png ")
         break
     
     
