@@ -20,8 +20,12 @@ import pylab as pl
 # For the web service
 import tornado.ioloop
 import tornado.web
+import logging
 
-
+hn = logging.NullHandler()
+hn.setLevel(logging.DEBUG)
+logging.getLogger("tornado.access").addHandler(hn)
+logging.getLogger("tornado.access").propagate = False
 
 def collector(enose):
     
@@ -35,7 +39,7 @@ def collector(enose):
         count +=1 
         if count == 20:
             # updating shared array
-            np.save( 'recent.npy', enose.memory[-2000:] )
+            np.save( 'recent.npy', enose.memory[-5000:] )
             count = 0
 
         
@@ -62,13 +66,11 @@ def genImage():
         pl.plot(time, recent[:,j])
     pl.ylabel("Sensor resistance")
     pl.xlabel('Time (h)')
-    d = (time.min() - time.max())*0.5
-    pl.xlim( int(time.min()*10)/10., int(time.max()*10)/10.+0.2 )
-    
+    pl.xlim( time.min() - 0.01, time.max() + 0.01)
     memdata = io.BytesIO()
     pl.grid(True)
     pl.tight_layout()
-    pl.savefig(memdata, format='png', dpi=250)
+    pl.savefig(memdata, format='png', dpi=150)
     image = memdata.getvalue()
     pl.close()
     return image
@@ -80,7 +82,7 @@ class MainHandler(tornado.web.RequestHandler):
         self.write("<title>Sensor</title></head>")
         self.write("<body>")
         self.write("<h1>Sensor hal"+str(sensorname.value)+"k</h1>")
-        self.write('<img src="recent.png" style="width: 1000px;" />')
+        self.write('<img src="recent.png" style="width: 900px;" />')
         self.write("</body></html>")
  
 class ImageHandler(tornado.web.RequestHandler):
