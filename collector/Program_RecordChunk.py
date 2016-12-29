@@ -1,24 +1,42 @@
-import ElectronicNose as EN
-import signal
-import sys, os, time
+# standard libraries
+import sys, os, time, io
 import datetime
-import multiprocessing as mp
+
+# enose library
+import ElectronicNose as EN
+
+# signal processing and math
+import signal
 import numpy as np
+
+# to create threads
+import multiprocessing as mp
+
+# For plot
 import matplotlib as mpl
 mpl.use('Agg')
 import pylab as pl
 
+# For the web service
+import tornado.ioloop
+import tornado.web
+
+
+
 def collector(enose):
+    
+    count = 0
     
     while stopSwitch.value != 0:
 
         ## Getting new sample
         enose.sniff()
-
-        if stopSwitch.value == 2:
+        
+        count +=1 
+        if count == 20:
             # updating shared array
             np.save( 'recent.npy', enose.memory[-2000:] )
-            stopSwitch.value = 1
+            count = 0
 
         
         key = True
@@ -33,12 +51,79 @@ def collector(enose):
 
 
 
+
+def genImage():
+    
+    recent = np.load('recent.npy')
+    
+    fig1 = pl.figure( figsize=(8,4) )
+    time = recent[:,0] / 3600.
+    for j in range(1,9):
+        pl.plot(time, recent[:,j])
+    pl.ylabel("Sensor resistance")
+    pl.xlabel('Time (h)')
+    d = (time.min() - time.max())*0.5
+    pl.xlim( int(time.min()*10)/10., int(time.max()*10)/10.+0.2 )
+    
+    memdata = io.BytesIO()
+    pl.grid(True)
+    pl.tight_layout()
+    pl.savefig(memdata, format='png', dpi=250)
+    image = memdata.getvalue()
+    pl.close()
+    return image
+ 
+class MainHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.write("<html><head>")
+        self.write('<meta http-equiv="refresh" content="5; URL=http://arm1.ucsd.edu:8888">')
+        self.write("<title>Sensor</title></head>")
+        self.write("<body>")
+        self.write("<h1>Sensor hal"+str(sensorname.value)+"k</h1>")
+        self.write('<img src="recent.png" style="width: 1000px;" />')
+        self.write("</body></html>")
+ 
+class ImageHandler(tornado.web.RequestHandler):
+    def get(self):
+        image = genImage()
+        self.set_header('Content-type', 'image/png')
+        self.set_header('Content-length', len(image))
+        self.write(image)
+
+
+def webservice():
+
+    application = tornado.web.Application([
+        (r"/", MainHandler),
+        (r"/recent.png", ImageHandler),
+    ])
+    
+    application.listen(8888)
+    tornado.ioloop.PeriodicCallback(try_exit, 100).start() 
+    tornado.ioloop.IOLoop.instance().start()
+    
+    return
+
+
+
+
+
+def try_exit(): 
+    if  stopSwitch.value == 0:
+        tornado.ioloop.IOLoop.instance().stop()
+    return
+
+
 def signal_handler(signal, frame):
     print "\nStopping..."
     sys.exit(0)
 
 
 signal.signal(signal.SIGINT, signal_handler)
+
+# Defining the name 
+sensorname = mp.Value('i')
+sensorname.value = int(sys.argv[-1])
 
 print "Creating the ENose object..."
 enose = EN.ElectronicNose()
@@ -51,8 +136,15 @@ stopSwitch.value = 1
 sniffer = mp.Process(target=collector, args=(enose,))
 sniffer.start()
 
+print( "Starting web service (use port 8888)" )
+is_closing = False
+webserv = mp.Process(target=webservice, args=())
+webserv.start()
+
+
 print "Starting data collection (CTRL+C to stop)"
 print "\n"
+
 
 
 while True:
@@ -65,13 +157,6 @@ while True:
 
     elif command == "plot" or command == "p":
         stopSwitch.value = 2
-        time.sleep(2.)
-        sofar = np.load('recent.npy')
-        timeaxis = sofar[:,0]/3600.
-        pl.figure( figsize=(8,4) )
-        for j in range(1,9):
-            pl.plot(timeaxis, sofar[:,j])
-        pl.savefig("plot_recent.png",dpi=100)
         pl.close()
         
     elif command == "stop" or command == "s":
