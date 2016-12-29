@@ -76,7 +76,7 @@ def genImage():
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.write("<html><head>")
-        self.write('<meta http-equiv="refresh" content="5; URL=http://arm1.ucsd.edu:8888">')
+        self.write('<meta http-equiv="refresh" content="5">')
         self.write("<title>Sensor</title></head>")
         self.write("<body>")
         self.write("<h1>Sensor hal"+str(sensorname.value)+"k</h1>")
