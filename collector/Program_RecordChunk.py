@@ -16,6 +16,7 @@ import multiprocessing as mp
 import matplotlib as mpl
 mpl.use('Agg')
 import pylab as pl
+import matplotlib.gridspec as gridspec
 
 # For the web service
 import tornado.ioloop
@@ -57,18 +58,44 @@ def collector(enose):
 
 
 def genImage():
-    
+
+    # Collecting latest data
     recent = np.load('recent.npy')
-    
-    fig1 = pl.figure( figsize=(8,4) )
+    # Converting time from seconds to hours
     time = recent[:,0] / 3600.
+    
+    pl.figure( figsize=(8,5) )
+    
+    gs = gridspec.GridSpec(2, 2, height_ratios=[1.5,1], width_ratios = [1,1] )
+    
+    ## Starting with the sensors
+    
+    sensorPanel = pl.subplot(gs[0,:])
     for j in range(1,9):
-        pl.plot(time, recent[:,j])
-    pl.ylabel("Sensor resistance")
-    pl.xlabel('Time (h)')
-    pl.xlim( time.min() - 0.01, time.max() + 0.01)
+        sensorPanel.plot(time, recent[:,j])
+        
+    sensorPanel.set_ylabel("Sensor resistance")
+    sensorPanel.set_xlabel('Time (h)')
+    sensorPanel.set_xlim( time.min() - 0.01, time.max() + 0.01)
+    sensorPanel.grid(True)
+
+    ## Temperature and humidity    
+    tempPanel = pl.subplot(gs[1,0])
+    tempPanel.plot(time, recent[:,9])
+    tempPanel.set_ylabel("Temperature")
+    tempPanel.set_xlabel('Time (h)')
+    tempPanel.set_xlim( time.min() - 0.01, time.max() + 0.01)
+    
+    humdPanel = pl.subplot(gs[1,1])
+    humdPanel.plot(time, recent[:,10])
+    humdPanel.set_ylabel("Humidity")
+    humdPanel.set_xlabel('Time (h)')
+    humdPanel.set_xlim( time.min() - 0.01, time.max() + 0.01)
+    
+    
+    
     memdata = io.BytesIO()
-    pl.grid(True)
+    
     pl.tight_layout()
     pl.savefig(memdata, format='png', dpi=150)
     image = memdata.getvalue()
