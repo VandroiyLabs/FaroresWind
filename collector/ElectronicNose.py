@@ -24,7 +24,7 @@ class ElectronicNose:
 
         ## Writing the parameters
         Vparam = '54'
-        if False: self.Sensor.write('P0000' + 8*Vparam )
+        if False: self.Sensor.write('P000' + 8*Vparam )
 
         return
 
