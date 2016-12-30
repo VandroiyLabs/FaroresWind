@@ -45,7 +45,7 @@ class listInductionsHandler(tornado.web.RequestHandler):
     def get(self):
         
         print self.request.remote_ip
-        if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:8] == self.IPs[1]:
+        if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
             
             self.write( file("pages/top.html").read() )
             
