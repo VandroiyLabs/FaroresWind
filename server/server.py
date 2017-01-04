@@ -34,6 +34,12 @@ class FaroreServer:
 
     def __init__(self, conffile = 'config'):
 
+        ## Setting up the logging
+        logging.basicConfig(filename='farore_server.log',
+                            level=logging.DEBUG,
+                            format='%(name)s @ %(levelname)s # %(asctime)s -- %(message)s')
+
+
         ## Getting configurations
         self.readConfigFile(conffile)
 
@@ -59,7 +65,6 @@ class FaroreServer:
             )
 
         application = web.Application(handlers, **settings)
-
         application.listen(8799)
         tornado.ioloop.IOLoop.instance().start()
 

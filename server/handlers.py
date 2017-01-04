@@ -3,6 +3,7 @@ import faroreDB
 
 import io
 import datetime
+import logging
 
 import numpy as np
 import matplotlib
@@ -41,6 +42,10 @@ class inputMetadataHandler(tornado.web.RequestHandler):
         if self.request.remote_ip[:-2] == '132.239.77.':
             self.render('pages/input_metadata.html')
 
+        ## If in this else, someone tried to access this
+        else:
+            logging.warning('Access to input_metadata from outside IP list: ' + str(self.request.remote_ip) )
+
         return
 
 
@@ -54,7 +59,6 @@ class listInductionsHandler(tornado.web.RequestHandler):
 
     def get(self):
 
-        print self.request.remote_ip
         if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
 
             miolo = '<div class="page-header">' + \
@@ -92,6 +96,10 @@ class listInductionsHandler(tornado.web.RequestHandler):
             miolo += '</tbody></table></div></div></div>'
             self.render('pages/index.html', title="List of inductions", message="...", miolo = miolo,
                         top=file("pages/top.html").read(), bottom=file("pages/bottom.html").read())
+
+        ## If in this else, someone tried to access this
+        else:
+            logging.warning('Access to list_inductions from outside IP list: ' + str(self.request.remote_ip) )
 
         return
 
@@ -219,7 +227,6 @@ class showInductionHandler(tornado.web.RequestHandler):
 
     def post(self):
 
-        print self.request.remote_ip
         if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
 
             datei = self.get_argument('datei', '')
@@ -268,4 +275,8 @@ class actionMetadataHandler(tornado.web.RequestHandler):
 
             self.db.insertInduction(date, t0, tc, delta0, deltac, sample, weather, enose)
 
-            return
+        ## If in this else, someone tried to access this
+        else:
+            logging.warning('Access to metadata_action from outside IP list: ' + str(self.request.remote_ip) )
+
+        return
