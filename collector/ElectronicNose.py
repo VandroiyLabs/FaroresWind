@@ -61,7 +61,7 @@ class ElectronicNose:
         nsamples_ = 0
         for j in range(nsamples):
             r = self.Sensor.readline()
-            if len(r) == 43:
+            if len(r) == 44:
                 nsamples_ += 1
                 avg[0,1:] += self.convert( r.split('\rV')[1].split('\n')[0][8:39] )
 
