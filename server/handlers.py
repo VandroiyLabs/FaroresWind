@@ -115,7 +115,7 @@ class viewInductionHandler(tornado.web.RequestHandler):
         return
 
 
-    def genImage(self, data, dtI, dtF):
+    def genImage(self, data, dtI = 0, dtF = 0):
 
         # Converting time from seconds to hours
         time = data[:,1]
@@ -133,14 +133,16 @@ class viewInductionHandler(tornado.web.RequestHandler):
 
         maxy = np.max( np.max( data[:,4:12] ) )
         miny = np.min( np.min( data[:,4:12] ) )
+        sensorPanel.set_ylim(miny*0.9, maxy*1.1)
 
         ## Drawing line when induction happened
-        tI = matplotlib.dates.date2num( dtI )
-        tF = matplotlib.dates.date2num( dtF )
+        if dtI != 0 and dtF != 0:
+            tI = matplotlib.dates.date2num( dtI )
+            tF = matplotlib.dates.date2num( dtF )
 
-        sensorPanel.plot( [tI, tI], [miny*0.5 , maxy*2], '--', color=(1.0,0.,0.0), lw=3., alpha=0.3, zorder=-1 )
-        sensorPanel.plot( [tF, tF], [miny*0.5 , maxy*2], '--', color=(1.0,0.,0.0), lw=3., alpha=0.3, zorder=-1 )
-        sensorPanel.set_ylim(miny*0.9, maxy*1.1)
+            sensorPanel.plot( [tI, tI], [miny*0.5 , maxy*2], '--', color=(1.0,0.,0.0), lw=3., alpha=0.3, zorder=-1 )
+            sensorPanel.plot( [tF, tF], [miny*0.5 , maxy*2], '--', color=(1.0,0.,0.0), lw=3., alpha=0.3, zorder=-1 )
+
 
         sensorPanel.set_ylabel("Sensor resistance")
         sensorPanel.set_xlabel('Time (h)')
@@ -173,7 +175,6 @@ class viewInductionHandler(tornado.web.RequestHandler):
 
     def get(self):
 
-        print self.request.remote_ip
         if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
 
             ## Getting input variables
@@ -197,10 +198,8 @@ class viewInductionHandler(tornado.web.RequestHandler):
                 self.db.getSamples( enose, str(dtI_b), str(dtF_b) )
             )
 
-            print samples.shape
-
             ## Subsampling
-            samples = samples[:: samples.shape[0]/1000, :]
+            samples = samples[:: samples.shape[0]/2000, :]
 
             ## converting time to number
             samples[:,1] = matplotlib.dates.date2num( samples[:,1] )
@@ -212,6 +211,50 @@ class viewInductionHandler(tornado.web.RequestHandler):
             self.set_header('Content-type', 'image/png')
             self.set_header('Content-length', len(image))
             self.write(image)
+
+        return
+
+
+
+
+class showTimeSeriesHandler(tornado.web.RequestHandler):
+
+    def initialize(self, database, IPs):
+        self.db = database
+        self.IPs = IPs
+        return
+
+    def get(self):
+        self.post()
+        return
+
+    def post(self):
+
+        if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
+
+
+            datei = self.get_argument('datei', " ")
+            timei = self.get_argument('timei', " ")
+            datef = self.get_argument('datef', " ")
+            timef = self.get_argument('timef', " ")
+            enose = self.get_argument('enose', " ")
+
+            miolo = file('pages/showTimeSeriesForm.html').read()
+            miolo = miolo.replace("{{ enose }}", enose)
+            miolo = miolo.replace("{{ datei }}", datei)
+            miolo = miolo.replace("{{ timei }}", timei)
+            miolo = miolo.replace("{{ datef }}", datef)
+            miolo = miolo.replace("{{ timef }}", timef)
+            
+            if datei != " ":
+
+                miolo += "<img src=\"./view?" \
+                        + "datei=" + datei + "&datef=" + datef + \
+                        "&timei=" + timei + "&timef=" + timef + "&enose=" + enose + "\" " \
+                        + " style=\"width: 80%;\"/>"
+
+            self.render('pages/index.html', title="Displaying induction", message="...", miolo = miolo,
+                        top=file("pages/top.html").read(), bottom=file("pages/bottom.html").read())
 
         return
 

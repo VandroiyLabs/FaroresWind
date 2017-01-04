@@ -1,0 +1,44 @@
+<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+<script src="//cdn.jsdelivr.net/webshim/1.14.5/polyfiller.js"></script>
+<script>
+webshims.setOptions('forms-ext', {types: 'date'});
+webshims.polyfill('forms forms-ext');
+$.webshims.formcfg = {
+en: {
+    dFormat: '-',
+    dateSigns: '-',
+    patterns: {
+        d: "yyyy-mm-dd"
+    }
+}
+};
+</script>
+
+<div class="row">
+  <div class="col-md-6">
+    <form action="./showTimeSeries" method="post">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Enose id</th>
+            <th>Start</th>
+            <th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+            <th>Final</th>
+            <th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+            <th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input name="enose" type="text" value="{{ enose }}"></td>
+            <td><input name="datei" type="date" value="{{ datei }}"></td>
+            <td><input name="timei" type="text" value="{{ timei }}"></td>
+            <td><input name="datef" type="date" value="{{ datef }}"></td>
+            <td><input name="timef" type="text" value="{{ timef }}"></td>
+            <td><input type="submit" value="Submit"></td>
+          </tr>
+        </tbody>
+      </table>
+    </form>
+  </div>
+</div>
