@@ -54,13 +54,22 @@ class ElectronicNose:
         self.Sensor.readline()
         
         avg = np.zeros( (1,11) )
-        for j in range(nsamples):
-            avg[0,1:] += self.convert( self.Sensor.readline().split('\rV')[1].split('\n')[0][8:39] )
-        
-        avg = avg/float(nsamples)
-        
+
         now = datetime.now()
-        avg[0,0] = now.hour*3600 + now.minute*60 + now.second + now.microsecond/1.e6
+        avg[0,0] = (now.hour*3600 + now.minute*60 + now.second + now.microsecond/1.e6 )/2.
+
+        nsamples_ = 0
+        for j in range(nsamples):
+            r = self.Sensor.readline()
+            if len(r) == 43:
+                nsamples_ += 1
+                avg[0,1:] += self.convert( r.split('\rV')[1].split('\n')[0][8:39] )
+
+        now = datetime.now()
+        avg[0,0] += (now.hour*3600 + now.minute*60 + now.second + now.microsecond/1.e6 )/2.
+        
+        avg[0,1:] = avg[0,1:]/float(nsamples_)
+        
         self.memory = np.concatenate( (self.memory, np.reshape(avg, (1,11))  ), axis=0 )
         
         return
