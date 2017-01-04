@@ -52,7 +52,7 @@ class FaroreServer:
         ## Starting tornado
         handlers = [
             (r'/', MainHandler),
-            (r'/input_metadata', inputMetadataHandler),
+            (r'/input_metadata', inputMetadataHandler, args),
             (r'/metadata_action', actionMetadataHandler, args),
             (r'/list_inductions', listInductionsHandler, args),
             (r'/view', viewInductionHandler, args),

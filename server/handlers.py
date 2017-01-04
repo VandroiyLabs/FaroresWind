@@ -31,16 +31,22 @@ class MainHandler(tornado.web.RequestHandler):
     def get(self):
         self.render('pages/index.html', title="Farore's wind", message="...", miolo = "",
                     top=file("pages/top.html").read(), bottom=file("pages/bottom.html").read())
-        print self.request.remote_ip
         return
 
 
 
 class inputMetadataHandler(tornado.web.RequestHandler):
+
+    def initialize(self, database, IPs):
+        self.IPs = IPs
+        return
+
     def get(self):
 
-        if self.request.remote_ip[:-2] == '132.239.77.':
-            self.render('pages/input_metadata.html')
+        if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
+            miolo = file('pages/input_metadata.html').read()
+            self.render('pages/index.html', title="Farore's wind", message="...", miolo = miolo,
+                        top=file("pages/top.html").read(), bottom=file("pages/bottom.html").read())
 
         ## If in this else, someone tried to access this
         else:
@@ -245,7 +251,7 @@ class showTimeSeriesHandler(tornado.web.RequestHandler):
             miolo = miolo.replace("{{ timei }}", timei)
             miolo = miolo.replace("{{ datef }}", datef)
             miolo = miolo.replace("{{ timef }}", timef)
-            
+
             if datei != " ":
 
                 miolo += "<img src=\"./view?" \
