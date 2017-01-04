@@ -41,7 +41,12 @@ class db:
         return self.query("SELECT count(*) FROM MEASUREMENT WHERE timestamp BETWEEN '"
                           +datei+"' AND '"+datef+"' ").fetchall()
 
-    def getInductions(self, limit):
+    def getSamples(self, nose_id, datei, datef):
+        res = self.query("SELECT * FROM MEASUREMENT WHERE nose_id = " + nose_id + " AND "
+                         + " timestamp BETWEEN '" + datei + "' AND '" + datef + "' ")
+        return res.fetchall()
+    
+    def getInductionsMetadata(self, limit):
         query = "SELECT * FROM INDUCTION ORDER BY ind_id DESC LIMIT " + str(limit)
         res = self.query(query).fetchall()
         return res

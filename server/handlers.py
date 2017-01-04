@@ -51,7 +51,7 @@ class listInductionsHandler(tornado.web.RequestHandler):
             
             # Retrieving data from inductions
             db = self.db
-            listInds = self.db.getInductions( limit=50 )
+            listInds = self.db.getInductionsMetadata( limit=50 )
             
             for ind in listInds:
                 self.write("----------------")
@@ -64,6 +64,35 @@ class listInductionsHandler(tornado.web.RequestHandler):
                 
                 self.write("<p>Date: " + date + "  - t0: " + t0 + " - tc: " + tc  + "</p>")
                 self.write("<p>Click to see more details...</p>")
+                
+            self.write( file("pages/bottom.html").read() )
+            
+        return
+
+
+
+
+
+class viewInductionHandler(tornado.web.RequestHandler):
+    
+    def initialize(self, database, IPs):
+        self.db = database
+        self.IPs = IPs
+        return
+
+    
+    def get(self):
+        
+        print self.request.remote_ip
+        if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
+            
+            self.write( file("pages/top.html").read() )
+            
+            # Retrieving data from inductions
+            db = self.db
+            listInds = self.db.getSamples( 2, "2016-12-25 00:00:00", "2016-12-25 01:00:00" )
+            
+            self.write( len(listInds) )
                 
             self.write( file("pages/bottom.html").read() )
             

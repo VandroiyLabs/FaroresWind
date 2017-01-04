@@ -49,6 +49,7 @@ class FaroreServer:
             (r'/input_metadata', inputMetadataHandler),
             (r'/metadata_action', actionMetadataHandler, args),
             (r'/list_inductions', listInductionsHandler, args),
+            (r'/view', viewInductionHandler, args),
         ]
         application = web.Application(handlers)
         
