@@ -67,7 +67,7 @@ class listInductionsHandler(tornado.web.RequestHandler):
                 self.write("<p>Induction code: " + str(ind[0]) + "</p>")
                 self.write("<p>Sample: " + str(ind[5]) + " - Enose: hal" + str(ind[8])+"k </p>")
 
-                date = str(ind[1])[:9]
+                date = str(ind[1])[:10]
                 t0   = str(ind[1])[10:]
                 tc   = str(ind[2])[10:]
                 
