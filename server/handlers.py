@@ -63,16 +63,28 @@ class listInductionsHandler(tornado.web.RequestHandler):
             listInds = self.db.getInductionsMetadata( limit=50 )
             
             for ind in listInds:
-                self.write("----------------")
-                self.write("<p>Induction code: " + str(ind[0]) + "</p>")
-                self.write("<p>Sample: " + str(ind[5]) + " - Enose: hal" + str(ind[8])+"k </p>")
+                self.write("----------------\n")
+                self.write("<p>Induction code: " + str(ind[0]) + "</p>\n")
+                self.write("<p>Sample: " + str(ind[5]) + " - Enose: hal" + str(ind[8])+"k </p>\n")
 
                 date = str(ind[1])[:10]
                 t0   = str(ind[1])[10:]
                 tc   = str(ind[2])[10:]
                 
-                self.write("<p>Date: " + date + "  - t0: " + t0 + " - tc: " + tc  + "</p>")
-                self.write("<p>Click to see more details...</p>")
+                self.write("<p>Date: " + date + "  - t0: " + t0 + " - tc: " + tc  + "</p>\n")                
+                
+                link = "<form action=\"./showInduction\" id=\"form" + str(ind[0]) + "\" method=\"post\">\n" \
+                       + "<input type=\"hidden\" name=\"enose\" value=\""+str(ind[8])+"\" />\n" \
+                       + "<input type=\"hidden\" name=\"datei\" value=\""+date+"\" />\n" \
+                       + "<input type=\"hidden\" name=\"timei\" value=\""+t0+"\" />\n" \
+                       + "<input type=\"hidden\" name=\"datef\" value=\""+date+"\" />\n" \
+                       + "<input type=\"hidden\" name=\"timef\" value=\""+tc+"\" />\n" \
+                       + "<p><a href=\"javascript:{}\" onclick=\"document.getElementById('form" + str(ind[0]) \
+                       + "').submit(); return false;\">See induction</a></p>\n" \
+                       + "</form>\n"
+
+                self.write(link)
+                self.write("\n\n")
                 
             self.write( file("pages/bottom.html").read() )
             
@@ -90,7 +102,7 @@ class viewInductionHandler(tornado.web.RequestHandler):
         return
     
     
-    def genImage(self, data):
+    def genImage(self, data, dtI, dtF):
         
         # Converting time from seconds to hours
         time = data[:,1]
@@ -101,9 +113,22 @@ class viewInductionHandler(tornado.web.RequestHandler):
         
         ## Starting with the sensorS
         sensorPanel = pl.subplot(gs[0,:])
+        maxy = 0
+        miny = 1e100
         for j in range(4,12):
             sensorPanel.plot(time, data[:,j], '-')
 
+        maxy = np.max( np.max( data[:,4:12] ) )
+        miny = np.min( np.min( data[:,4:12] ) )
+        
+        ## Drawing line when induction happened
+        tI = matplotlib.dates.date2num( dtI )
+        tF = matplotlib.dates.date2num( dtF )
+        
+        sensorPanel.plot( [tI, tI], [miny*0.5 , maxy*2], '--', color=(1.0,0.,0.0), lw=3., alpha=0.3, zorder=-1 )
+        sensorPanel.plot( [tF, tF], [miny*0.5 , maxy*2], '--', color=(1.0,0.,0.0), lw=3., alpha=0.3, zorder=-1 )
+        sensorPanel.set_ylim(miny*0.9, maxy*1.1)
+        
         sensorPanel.set_ylabel("Sensor resistance")
         sensorPanel.set_xlabel('Time (h)')
         sensorPanel.set_xlim( time.min() - 0.01, time.max() + 0.01)
@@ -125,7 +150,7 @@ class viewInductionHandler(tornado.web.RequestHandler):
         pl.tight_layout()
         
         memdata = io.BytesIO()
-        pl.savefig(memdata, format='png')
+        pl.savefig(memdata, format='png', dpi=400)
         pl.close()
         
         image = memdata.getvalue()
@@ -145,12 +170,21 @@ class viewInductionHandler(tornado.web.RequestHandler):
             timef = self.get_argument('timef', '')
             enose = int( self.get_argument('enose', '') )
 
-            print datei, timei, datef, timef
+
+            ## Additional buffer for plot
+            timebuffer = datetime.timedelta(seconds=1000)
+            dtI = datetime.datetime.strptime( datei + " " + timei.split(".")[0], "%Y-%m-%d %H:%M:%S" )
+            dtI_b = dtI - timebuffer
+            dtF = datetime.datetime.strptime( datef + " " + timef.split(".")[0], "%Y-%m-%d %H:%M:%S" )
+            dtF_b = dtF + timebuffer
+            
             
             ## Retrieving data from inductions
-            samples = np.asarray(self.db.getSamples( enose,
-                                                     datei + " " + timei,
-                                                     datef + " " + timef ))
+            samples = np.asarray(
+                self.db.getSamples( enose, str(dtI_b), str(dtF_b) )
+            )
+            
+            print samples.shape
             
             ## Subsampling
             samples = samples[:: samples.shape[0]/1000, :]
@@ -159,7 +193,7 @@ class viewInductionHandler(tornado.web.RequestHandler):
             samples[:,1] = matplotlib.dates.date2num( samples[:,1] )
             
             ## generating the plot
-            image = self.genImage( samples )
+            image = self.genImage( samples, dtI, dtF )
             
             ## Printing to output...
             self.set_header('Content-type', 'image/png')
@@ -187,14 +221,15 @@ class showInductionHandler(tornado.web.RequestHandler):
             timei = self.get_argument('timei', '')
             datef = self.get_argument('datef', '')
             timef = self.get_argument('timef', '')
-            enose = int( self.get_argument('enose', '') )
+            enose = self.get_argument('enose', '')
             
             
             self.write( file("pages/top.html").read() )
             
             self.write( "<img src=\"./view?" \
-                        + "datei=2016-12-27&datef=2016-12-27&timei=14:00:00&timef=16:00:00" \
-                        + "&enose=2\" />"
+                        + "datei=" + datei + "&datef=" + datef + \
+                        "&timei=" + timei + "&timef=" + timef + "&enose=" + enose + "\" " \
+                        + " style=\"width: 80%;\"/>"
             )
             
             self.write( file("pages/bottom.html").read() )
