@@ -33,7 +33,7 @@ from handlers import *
 class FaroreServer:
 
     def __init__(self, conffile = 'config'):
-        
+
         ## Getting configurations
         self.readConfigFile(conffile)
 
@@ -42,7 +42,7 @@ class FaroreServer:
                               self.db_password, self.db_database)
 
         args = { 'database' : self.db, 'IPs' : self.IPs }
-        
+
         ## Starting tornado
         handlers = [
             (r'/', MainHandler),
@@ -51,29 +51,34 @@ class FaroreServer:
             (r'/list_inductions', listInductionsHandler, args),
             (r'/view', viewInductionHandler, args),
             (r'/showInduction', showInductionHandler, args),
-            
+
         ]
-        application = web.Application(handlers)
-        
+
+        settings = dict(
+            static_path = os.path.join(os.path.dirname(__file__), "pages")
+            )
+
+        application = web.Application(handlers, **settings)
+
         application.listen(8799)
         tornado.ioloop.IOLoop.instance().start()
-        
+
         return
 
 
 
     def readConfigFile(self, configFile):
-        
+
         config = open(configFile, 'r')
-        
+
         self.db_username = config.readline().split("\n")[0]
         self.db_password = config.readline().split("\n")[0]
         self.db_database = config.readline().split("\n")[0]
 
         self.IPs = config.readline().split("\n")[0].split(",")
-        
+
         config.close()
-        
+
         return
 
 
@@ -81,5 +86,3 @@ class FaroreServer:
 
 if __name__ == "__main__":
     server = FaroreServer()
-    
-                
