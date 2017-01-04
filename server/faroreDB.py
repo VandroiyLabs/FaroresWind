@@ -42,8 +42,9 @@ class db:
                           +datei+"' AND '"+datef+"' ").fetchall()
 
     def getSamples(self, nose_id, datei, datef):
-        res = self.query("SELECT * FROM MEASUREMENT WHERE nose_id = " + nose_id + " AND "
-                         + " timestamp BETWEEN '" + datei + "' AND '" + datef + "' ")
+        query =  "SELECT * FROM MEASUREMENT WHERE enose_id = " + str(nose_id) \
+                 + " AND  timestamp BETWEEN '" + datei + "' AND '" + datef + "' "
+        res = self.query(query)
         return res.fetchall()
     
     def getInductionsMetadata(self, limit):
