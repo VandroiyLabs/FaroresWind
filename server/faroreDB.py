@@ -57,7 +57,6 @@ class db:
         query += "'" + date+" "+t0 + "','" + date+" "+tc + "'," + delta0 + "," + deltac
         query += ",'" + sample + "','" + weather + "',NULL," + enose_id
         query += ");"
-        print query
 
         self.query( query )
         return
