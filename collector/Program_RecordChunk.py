@@ -49,6 +49,7 @@ def exporter():
                 ## Checking server status
                 if response == "Busy":
                     print "Server is busy."
+                    time.sleep(60.)
                     
                 elif response == "Free":
                     
