@@ -29,12 +29,8 @@ from tornado.ioloop import IOLoop
 from tornado.web import asynchronous, RequestHandler, Application
 from tornado.httpclient import AsyncHTTPClient
 
-
-
 # Our own library
 import faroreDB
-
-
 
 
 class dataIntegrationHandler(tornado.websocket.WebSocketHandler):
@@ -52,9 +48,10 @@ class dataIntegrationHandler(tornado.websocket.WebSocketHandler):
     #
     ###
 
-    def initialize(self, database, IPs):
+    def initialize(self, database, IPs, tmpFolder):
         self.db = database
         self.IPs = IPs
+        self.tmpFolder = tmpFolder
         return
 
     
@@ -80,11 +77,31 @@ class dataIntegrationHandler(tornado.websocket.WebSocketHandler):
             
             if message == "sending":
                 self.write_message("Waiting")
-                
+            
+            
+            elif 'My name:' in message:
+                self.enose_id =  int(message.split(':')[1])
+            
+            
             elif message == "sent":
-                self.write_message("Processing")
+		print self.enose_id
+		for file in os.listdir(self.tmpFolder):
+    		    if file.startswith("NewData_"+str(self.enose_id)):
+			filename = file[:-4]
+			self.write_message("Processing")
+			ym = filename.split('_')[2]
+			dia = filename.split('_')[3]
+		        os.system("python "+self.tmpFolder+"npy2csv_convert.py "+self.tmpFolder+filename
+                                  +".npy "+dia+" "+ym+" "+str(self.enose_id))	
+        	        self.db.copy("measurement",self.tmpFolder+filename+".csv")
+		        os.system("mv "+self.tmpFolder+filename+ ".npy "+self.tmpFolder+filename.split('New')[1]+".npy")
+			os.system("zip "+self.tmpFolder+filename.split('New')[1]+".zip "+self.tmpFolder+filename.split('New')[1]+".npy")
+                        os.system("rm -f "+self.tmpFolder+filename+ ".csv")
 
-        else:
+
+                dataIntegrationHandler.state = 0
+	
+	else:
             self.write_message("Wait for your turn. Current status: "
                                + str(dataIntegrationHandler.state) )
 
@@ -97,5 +114,4 @@ class dataIntegrationHandler(tornado.websocket.WebSocketHandler):
         logging.info("Connected to DataIntegration closed from " +str(self.request.remote_ip) )
         if dataIntegrationHandler.currentClient == self:
             dataIntegrationHandler.currentClient = 0
-        
         return

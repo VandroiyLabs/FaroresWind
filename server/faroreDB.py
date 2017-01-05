@@ -30,6 +30,21 @@ class db:
         cur.execute( query )
         return cur
 
+    def copy(self, tablename, filename):
+        SQL_STATEMENT = """
+            COPY %s FROM STDIN WITH
+            CSV
+            DELIMITER AS ','
+            NULL as 'NULL'
+        """
+        file_object = open(filename)
+
+        cur = self.connection.cursor()
+        cur.copy_expert(sql=SQL_STATEMENT % tablename, file=file_object )
+        cur.close()
+        file_object.close()
+	return 
+
     def close(self):
         self.connection.close()
         return
