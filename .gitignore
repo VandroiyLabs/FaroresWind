@@ -2,6 +2,7 @@
 *config
 *#*#
 *farore_server.log
+*nohup.out
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

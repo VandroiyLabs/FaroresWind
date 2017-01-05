@@ -29,7 +29,7 @@ from tornado.httpclient import AsyncHTTPClient
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render('pages/index.html', title="Farore's wind", message="...", miolo = "",
+        self.render('pages/index.html', title="Farore's wind", miolo = "",
                     top=file("pages/top.html").read(), bottom=file("pages/bottom.html").read())
         return
 
@@ -45,7 +45,7 @@ class inputMetadataHandler(tornado.web.RequestHandler):
 
         if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
             miolo = file('pages/input_metadata.html').read()
-            self.render('pages/index.html', title="Farore's wind", message="...", miolo = miolo,
+            self.render('pages/index.html', title="Farore's wind", miolo = miolo,
                         top=file("pages/top.html").read(), bottom=file("pages/bottom.html").read())
 
         ## If in this else, someone tried to access this
@@ -100,7 +100,7 @@ class listInductionsHandler(tornado.web.RequestHandler):
                 miolo += '</tr>\n\n'
 
             miolo += '</tbody></table></div></div></div>'
-            self.render('pages/index.html', title="List of inductions", message="...", miolo = miolo,
+            self.render('pages/index.html', title="List of inductions", miolo = miolo,
                         top=file("pages/top.html").read(), bottom=file("pages/bottom.html").read())
 
         ## If in this else, someone tried to access this
@@ -259,7 +259,7 @@ class showTimeSeriesHandler(tornado.web.RequestHandler):
                         "&timei=" + timei + "&timef=" + timef + "&enose=" + enose + "\" " \
                         + " style=\"width: 80%;\"/>"
 
-            self.render('pages/index.html', title="Displaying induction", message="...", miolo = miolo,
+            self.render('pages/index.html', title="Displaying induction", miolo = miolo,
                         top=file("pages/top.html").read(), bottom=file("pages/bottom.html").read())
 
         return
@@ -289,7 +289,7 @@ class showInductionHandler(tornado.web.RequestHandler):
                         "&timei=" + timei + "&timef=" + timef + "&enose=" + enose + "\" " \
                         + " style=\"width: 80%;\"/>"
 
-            self.render('pages/index.html', title="Displaying induction", message="...", miolo = miolo,
+            self.render('pages/index.html', title="Displaying induction", miolo = miolo,
                         top=file("pages/top.html").read(), bottom=file("pages/bottom.html").read())
 
         return
