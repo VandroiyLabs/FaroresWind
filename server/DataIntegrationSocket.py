@@ -52,7 +52,13 @@ class dataIntegrationHandler(tornado.websocket.WebSocketHandler):
     #
     ###
 
-    ## The client connected
+    def initialize(self, database, IPs):
+        self.db = database
+        self.IPs = IPs
+        return
+
+    
+    ## THE CLIENT connected
     def open(self):
         print self.state
         logging.info("New client connected into DataIntegration from " +str(self.request.remote_ip) )
