@@ -38,7 +38,7 @@ class ElectronicNose:
         return
 
     def forget(self):
-        self.memory = np.empty((0, numSensors + 2 + 1))
+        self.memory = np.empty( (0, self.memory.shape[1] ) )
         return
 
     def refresh(self, nmax):

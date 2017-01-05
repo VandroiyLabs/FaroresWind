@@ -22,39 +22,114 @@ import matplotlib.gridspec as gridspec
 import tornado.ioloop
 import tornado.web
 import logging
+from websocket import create_connection
+
+
 
 hn = logging.NullHandler()
 hn.setLevel(logging.DEBUG)
 logging.getLogger("tornado.access").addHandler(hn)
 logging.getLogger("tornado.access").propagate = False
 
-def collector(enose):
+
+
+def exporter():
+    
+    while True:
+
+        if doExport.value == 1:
+            print "\n\nConnecting to server..."
+
+            try:
+                ## Connecting to the socket
+                ws = create_connection("ws://" + host + ":8799/DataIntegration")
+
+                response = ws.recv()
+                
+                ## Checking server status
+                if response == "Busy":
+                    print "Server is busy."
+                    
+                elif response == "Free":
+                    
+                    print "Server ready to process data."
+                    
+                    ws.send( "My name: " + str(sensorname.value) )
+                    ws.send( "sending" )
+                    print ws.recv()
+                    
+                    stopSwitch.value = 3
+                    
+                    while doExport.value == 1:
+                        time.sleep(2.)
+                    
+                    ws.send("sent")
+                    print ws.recv()
+                    
+                    ws.close()
+                    
+                    doExport.value = 0
+                    
+                else:
+                    print "Server is crazy."
+                
+            except:
+                print "Server not responsive!!"
+                doExport.value = 0
+
+        
+        time.sleep(5.)
+    
+    return
+
+
+
+
+
+
+
+
+def collector(enose, user, host, folder):
 
     count = 0
 
     while stopSwitch.value != 0:
 
         if stopSwitch.value == 3:
-            file_name = time.strftime("%Y-%m_%d_%H:%M:%S")
+            
+            file_name = 'NewData_' + str(sensorname.value) + '_' \
+                        + time.strftime("%Y-%m_%d_%H-%M-%S")
+            
             ##TO DO checar se arquivo foi salvo e exportado
             np.save( file_name+'.npy', enose.memory )
-            os.system("scp "+file_name+".npy jaquejbrito@itristan.ucsd.edu:/home/SENSORS_data/toexport/")
-            enose.forget()
+            outscp = os.system("scp " + file_name + ".npy "
+                               + user + "@" + host + ":" + folder)
 
-        ## Getting new sample
-        enose.sniff()
-
-        count +=1
-        if count == 20:
-            # updating shared array
-            np.save( 'recent.npy', enose.memory[-5000:] )
-            count = 0
-
-
-        key = True
-        while key:
-            time.sleep(0.01)
-            key = not ( 100 - ( ( time.time() % 1 )*1000 % 100 ) < 50 )
+            if outscp == 0:
+                os.system("rm -f "+file_name+".npy")
+                enose.forget()
+            
+            stopSwitch.value = 1
+            doExport.value = -1
+        
+        
+        else:
+            
+            ## Getting new sample
+            enose.sniff()
+            
+            count +=1
+            if count == 20:
+                # updating shared array
+                np.save( 'recent.npy', enose.memory[-5000:] )
+                count = 0
+            
+            
+            key = True
+            
+            while key:
+                time.sleep(0.01)
+                key = not ( 100 - ( ( time.time() % 1 )*1000 % 100 ) < 50 )
 
 
     np.save('Data.npy', enose.memory)
@@ -166,11 +241,33 @@ enose = EN.ElectronicNose()
 
 print "Preparing environment..."
 
+
+
+## Shared variables
+
 stopSwitch = mp.Value('i')
 stopSwitch.value = 1
 
-sniffer = mp.Process(target=collector, args=(enose,))
+doExport = mp.Value('i')
+doExport.value = 0
+
+
+## Reading configuration file
+configfile = file('Cconfig','r')
+user = configfile.readline().split('\n')[0]
+host = configfile.readline().split('\n')[0]
+folder = configfile.readline().split('\n')[0]
+configfile.close()
+
+
+## Parallel processes
+
+sniffer = mp.Process(target=collector, args=(enose, user, host, folder))
 sniffer.start()
+
+exporter = mp.Process(target=exporter)
+exporter.start()
+
 
 print( "Starting web service (use port 8888)" )
 is_closing = False
@@ -196,7 +293,9 @@ while True:
         pl.close()
 
     elif command == "export" or command == "e":
-        stopSwitch.value = 3
+        doExport.value = 1
+        while doExport.value != 0:
+            time.sleep(0.1)
 
     elif command == "stop" or command == "s":
         stopSwitch.value = 0
