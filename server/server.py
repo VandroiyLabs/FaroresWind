@@ -53,8 +53,11 @@ class FaroreServer:
         handlers = [
             (r'/', MainHandler),
             (r'/input_metadata', inputMetadataHandler, args),
+            (r'/input_enoseConf', inputEnoseConfigHandler, args),
             (r'/metadata_action', actionMetadataHandler, args),
+            (r'/enoseConf_action', actionEnoseConfigHandler, args),
             (r'/list_inductions', listInductionsHandler, args),
+            (r'/list_enoseConf', listEnoseConfHandler, args),
             (r'/view', viewInductionHandler, args),
             (r'/showTimeSeries', showTimeSeriesHandler, args),
             (r'/showInduction', showInductionHandler, args),

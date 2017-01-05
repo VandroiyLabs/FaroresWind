@@ -56,6 +56,26 @@ class inputMetadataHandler(tornado.web.RequestHandler):
 
 
 
+class inputEnoseConfigHandler(tornado.web.RequestHandler):
+
+    def initialize(self, database, IPs):
+        self.IPs = IPs
+        return
+
+    def get(self):
+
+        if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
+            miolo = file('pages/input_enose_config.html').read()
+            self.render('pages/index.html', title="Farore's wind", miolo = miolo,
+                        top=file("pages/top.html").read(), bottom=file("pages/bottom.html").read())
+
+        ## If in this else, someone tried to access this
+        else:
+            logging.warning('Access to input_metadata from outside IP list: ' + str(self.request.remote_ip) )
+
+        return
+
+
 class listInductionsHandler(tornado.web.RequestHandler):
 
     def initialize(self, database, IPs):
@@ -110,6 +130,50 @@ class listInductionsHandler(tornado.web.RequestHandler):
         return
 
 
+
+
+class listEnoseConfHandler(tornado.web.RequestHandler):
+
+    def initialize(self, database, IPs):
+        self.db = database
+        self.IPs = IPs
+        return
+
+    def get(self):
+
+        if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
+
+            miolo = '<div class="page-header">' + \
+                    '<div class="row"><div class="col-md-6"><table class="table table-striped">' + \
+                    '<thead><tr><th width=500px colspan=2>enose ID</th><th width=150px colspan=3>Location</th><th width=150px colspan=3>Date</th><th width=50px></th><th width=50px></th></tr></thead>'+ \
+                    '<tbody>\n'
+
+            # Retrieving data from inductions
+            db = self.db
+            listConfs = self.db.getEnoseConfs( )
+            
+            for conf in listConfs:
+                miolo += "<tr><td colspan=2>hal" + str(conf[-1]) + "k</td>\n"
+                miolo += "<td colspan=3>" + str(conf[-2]) + "</td>\n"
+                miolo += "<td colspan=5>" + str(conf[1]) + "</td>"
+
+                miolo += "</tr><tr>"
+                for j in range(10):
+                    miolo += "<td>" + str(conf[2+j]) + "</td>"
+
+                miolo += "</tr>"                
+                
+            miolo += '</tbody></table></div></div></div>'
+            self.render('pages/index.html', title="Current list of ENoses", miolo = miolo,
+                        top=file("pages/top.html").read(), bottom=file("pages/bottom.html").read())
+
+        ## If in this else, someone tried to access this
+        else:
+            logging.warning('Access to list_inductions from outside IP list: ' + str(self.request.remote_ip) )
+
+        return
+
+    
 
 
 
@@ -329,3 +393,44 @@ class actionMetadataHandler(tornado.web.RequestHandler):
             logging.warning('Access to metadata_action from outside IP list: ' + str(self.request.remote_ip) )
 
         return
+
+
+class actionEnoseConfigHandler(tornado.web.RequestHandler):
+
+    def initialize(self, database, IPs):
+        self.db = database
+        self.IPs = IPs
+        return
+
+
+    def post(self):
+        
+        if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
+            self.render('pages/metadata_action.html')
+            
+            date = self.get_argument('date', '')
+            
+            
+            S = []
+            for j in range(1,11):
+                S.append( self.get_argument('S'+str(j), '') )
+
+            T = []
+            for j in range(1,9):
+                T.append( self.get_argument('T'+str(j), '') )
+
+            location = self.get_argument('location', '')
+            enose =  self.get_argument('enose', '')
+
+            if len(enose) > 1:
+                enose = enose[3]
+
+            self.db.insertEnoseConf(enose, date, S, T, location)
+
+        ## If in this else, someone tried to access this
+        else:
+            logging.warning('Access to metadata_action from outside IP list: ' + str(self.request.remote_ip) )
+
+        return
+
+    
