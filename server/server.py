@@ -21,8 +21,12 @@ import pylab as pl
 import tornado.ioloop
 import tornado.web as web
 import logging
-from handlers import *
 
+
+# Our own library
+import faroreDB
+from handlers import *
+from DataIntegrationSocket import *
 
 
 
@@ -52,6 +56,7 @@ class FaroreServer:
         ## Starting tornado
         handlers = [
             (r'/', MainHandler),
+            (r'/DataIntegration', dataIntegrationHandler),
             (r'/input_metadata', inputMetadataHandler, args),
             (r'/input_enoseConf', inputEnoseConfigHandler, args),
             (r'/metadata_action', actionMetadataHandler, args),
