@@ -14,18 +14,18 @@ class ElectronicNose:
         ## Creating the serial object
         self.Sensor = serial.Serial(devAdd, baudrate)
         self.memory = np.empty((0, numSensors + 2 + 1))
-        
+
         ## File to store samples
         if outputFile != '':
             self.outfile = open(outputFile, 'a')
         else:
             self.outfile = []
-        
-        
+
+
         ## Writing the parameters
         Vparam = '54'
         if False: self.Sensor.write('P000' + 8*Vparam )
-        
+
         return
 
 
@@ -37,6 +37,10 @@ class ElectronicNose:
         self.Sensor.close()
         return
 
+    def forget(self):
+        self.memory = np.empty((0, numSensors + 2 + 1))
+        return
+
     def refresh(self, nmax):
 
         self.t[:self.tMax - nmax] = self.t[nmax:]
@@ -46,15 +50,15 @@ class ElectronicNose:
 
 
     def sniff(self, nsamples=5):
-        
+
         # Flushing to ensure time precision
         self.Sensor.flush()
-        
+
         # Possibly getting partial line -- this will be discarded
         self.Sensor.readline()
-        
+
         avg = np.zeros( (1,11) )
-        
+
         nsamples_ = 0
         for j in range(nsamples):
             r = self.Sensor.readline()
@@ -64,25 +68,25 @@ class ElectronicNose:
 
         if nsamples_ > 0:
             avg = avg/float(nsamples_)
-            
+
             now = datetime.now()
             avg[0,0] = now.hour*3600 + now.minute*60 + now.second + now.microsecond/1.e6
-            
+
             self.memory = np.concatenate( (self.memory, np.reshape(avg, (1,11))  ), axis=0 )
-        
+
         return
 
-    
+
     def convert(self, string):
         s = np.zeros(10)
         # Converting 8 sensors
         for j in range(8):
             s[j] = int( string[j*3:j*3+3] , 16 )
-        
+
         # Converting temperature and humidity
         s[8] = int( string[24:28] , 16)
         s[9] = int( string[28:31] , 16)
-        
+
         return s
 
 
