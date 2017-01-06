@@ -86,16 +86,45 @@ class listInductionsHandler(tornado.web.RequestHandler):
 
     def get(self):
 
+        sampleid = int( self.get_argument('smp', -1) )
+
         if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
 
             miolo = '<div class="page-header">' + \
                     '<div class="row"><div class="col-md-6"><table class="table table-striped">' + \
+                    '<thead><tr><th width=100px>Sample id</th><th>Number</th><th>Avg duration</th></tr></thead>'+ \
+                    '<tbody>\n'
+
+            listSamples = self.db.getInductionList( )
+
+            total = 0
+            smp_count = 0
+            for sample in listSamples:
+                anchor = "<a href='/list_inductions?smp="+str(smp_count)+"'>"
+                smp_count += 1
+                miolo += "<tr><td>"+anchor+sample[0]+"</a></td><td>"+str(sample[1])+"</td><td>"+str(sample[2])+"</td></tr>"
+                total += sample[1]
+
+            miolo += "<tr><td><a href='/list_inductions'>Total</a></td><td>"+str(total)+"</td><td>&nbsp;</td></tr>"
+
+            miolo += '</tbody></table></div></div></div>'
+
+            miolo += '<div class="page-header">' + \
+                    '<div class="row"><div class="col-md-6"><table class="table table-striped">' + \
                     '<thead><tr><th width=100px>Id</th><th>Sample name/description</th><th>Enose</th><th>Date</th><th>t0</th><th>tc</th><th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th></tr></thead>'+ \
                     '<tbody>\n'
 
-            # Retrieving data from inductions
+
+            ## Selecting which sample
+            if sampleid > len( listSamples ): sampleid = -1
+            if sampleid >= 0:
+                sample = listSamples[sampleid][0]
+            else:
+                sample = ''
+
+            ## Retrieving data from inductions
             db = self.db
-            listInds = self.db.getInductionsMetadata( limit=50 )
+            listInds = self.db.getInductionsMetadata( sample = sample, limit = 50 )
 
             for ind in listInds:
                 miolo += "<tr><td>" + str(ind[0]) + "</td>\n"

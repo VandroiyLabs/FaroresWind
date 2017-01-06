@@ -10,21 +10,21 @@ import datetime
 class db:
 
     def __init__(self, username, password, database):
-        
+
         self.hostname = 'localhost'
         self.username = username
         self.password = password
         self.database = database
-        
+
         self.connection = psycopg2.connect(
             host = self.hostname,
             user = self.username,
             password = self.password,
             dbname = self.database )
         self.connection.autocommit = True
-        
+
         return
-    
+
     def query(self, query):
         cur = self.connection.cursor()
         cur.execute( query )
@@ -43,15 +43,15 @@ class db:
         cur.copy_expert(sql=SQL_STATEMENT % tablename, file=file_object )
         cur.close()
         file_object.close()
-	return 
+	return
 
     def close(self):
         self.connection.close()
         return
 
-    
+
     ## customized queries
-    
+
     def countSamples(self, datei, datef):
         return self.query("SELECT count(*) FROM MEASUREMENT WHERE timestamp BETWEEN '"
                           +datei+"' AND '"+datef+"' ").fetchall()
@@ -61,14 +61,21 @@ class db:
                  + " AND  timestamp BETWEEN '" + datei + "' AND '" + datef + "' "
         res = self.query(query)
         return res.fetchall()
-    
+
     def getEnoseConfs(self):
         query = "SELECT * FROM ENOSE_CONF"
         res = self.query(query).fetchall()
         return res
-    
-    def getInductionsMetadata(self, limit):
-        query = "SELECT * FROM INDUCTION ORDER BY ind_id DESC LIMIT " + str(limit)
+
+    def getInductionsMetadata(self, sample = '', limit = 50):
+        query = "SELECT * FROM INDUCTION "
+        if sample != '': query += "WHERE sample = '"+ sample +"' "
+        query += "ORDER BY ind_id DESC LIMIT " + str(limit)
+        res = self.query(query).fetchall()
+        return res
+
+    def getInductionList(self):
+        query = "SELECT sample, count(*), avg(tc-t0) FROM INDUCTION GROUP BY SAMPLE;"
         res = self.query(query).fetchall()
         return res
 
@@ -81,28 +88,28 @@ class db:
             label_s += 'sensor_' + str(j) + ','
             label_t += 'heat_' + str(j) + ','
         label_s += 'sensor_9,sensor_10,'
-        
-        
+
+
         query = "INSERT INTO ENOSE_CONF(date," + label_s + label_t
         query += "location, enose_id) VALUES ("
         query += "'" + date + "',"
-        
+
         val_s = ''
         val_t = ''
         for j in range(0,8):
             val_s += "'" + S[j] + "',"
             val_t += "'" + T[j] + "',"
         val_s += "'" + S[8] + "','" + S[9] + "',"
-        
+
         query += val_s + val_t
         query += "'" + location + "'," + enose_id + ");"
 
-        
-        self.query( query )
-        
-        return 
 
-    
+        self.query( query )
+
+        return
+
+
     def insertInduction(self, date, t0, tc, delta0, deltac, sample, weather, enose_id):
         query = "INSERT INTO INDUCTION(t0, tc, delta0, deltac, sample, weather_info, conf_id, enose_id) VALUES ("
         query += "'" + date+" "+t0 + "','" + date+" "+tc + "'," + delta0 + "," + deltac
