@@ -89,7 +89,7 @@ class listInductionsHandler(tornado.web.RequestHandler):
 
             miolo = '<div class="page-header">' + \
                     '<div class="row"><div class="col-md-6"><table class="table table-striped">' + \
-                    '<thead><tr><th>Id</th><th>Sample name/description</th><th>Enose</th><th>Date</th><th>t0</th><th>tc</th><th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th></tr></thead>'+ \
+                    '<thead><tr><th width=100px>Id</th><th>Sample name/description</th><th>Enose</th><th>Date</th><th>t0</th><th>tc</th><th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th></tr></thead>'+ \
                     '<tbody>\n'
 
             # Retrieving data from inductions
@@ -189,7 +189,7 @@ class viewInductionHandler(tornado.web.RequestHandler):
 
         # Converting time from seconds to hours
         time = data[:,1]
-
+        
         pl.figure( figsize=(8,5) )
 
         gs = gridspec.GridSpec(2, 2, height_ratios=[1.5,1], width_ratios = [1,1] )
@@ -221,13 +221,13 @@ class viewInductionHandler(tornado.web.RequestHandler):
 
         ## Temperature and humidity
         tempPanel = pl.subplot(gs[1,0])
-        tempPanel.plot(time, data[:,2])
+        tempPanel.plot(time, data[:,2], '-')
         tempPanel.set_ylabel("Temperature")
         tempPanel.set_xlabel('Time (h)')
         tempPanel.set_xlim( time.min() - 0.01, time.max() + 0.01)
 
         humdPanel = pl.subplot(gs[1,1])
-        humdPanel.plot(time, data[:,3])
+        humdPanel.plot(time, data[:,3], '-')
         humdPanel.set_ylabel("Humidity")
         humdPanel.set_xlabel('Time (h)')
         humdPanel.set_xlim( time.min() - 0.01, time.max() + 0.01)
@@ -270,10 +270,12 @@ class viewInductionHandler(tornado.web.RequestHandler):
 
             ## Subsampling
             samples = samples[:: samples.shape[0]/2000, :]
-
-            ## converting time to number
+            
+            ## Converting time to number and sorting by time
             samples[:,1] = matplotlib.dates.date2num( samples[:,1] )
+            samples = samples[ samples[:,1].argsort() ]
 
+            
             ## generating the plot
             image = self.genImage( samples, dtI, dtF )
 
