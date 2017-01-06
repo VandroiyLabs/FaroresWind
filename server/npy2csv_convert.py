@@ -18,11 +18,13 @@ if data.shape[1] == 11: hasTH = True
 data4conv = np.zeros( (data.shape[0], data.shape[1]+1) )
 data4conv[:, 1:] = data
 
-data4conv[:,0] = day0
-
 time = data[:,0]/3600.
 DaySwitchPos = np.where( np.diff(time) < -1.0 )[0] + 1
+
+data4conv[:,0] = day0 - DaySwitchPos.shape[0]
+
 for switch in range( DaySwitchPos.shape[0] ):
+    print DaySwitchPos[switch]
     data4conv[ DaySwitchPos[switch]: , 0 ] += 1
 
 
@@ -44,8 +46,8 @@ for line in data4conv[:]:
     for j in range(2,10):
         linha += "," + str(line[j])
     linha += ",NULL"
-
+    
     outfile.write(linha + "\n")
-
+    
     
 outfile.close()
