@@ -2,6 +2,7 @@ import psycopg2
 import faroreDB
 
 import io
+import pickle
 import datetime
 import logging
 
@@ -151,7 +152,7 @@ class listEnoseConfHandler(tornado.web.RequestHandler):
             # Retrieving data from inductions
             db = self.db
             listConfs = self.db.getEnoseConfs( )
-            
+
             for conf in listConfs:
                 miolo += "<tr><td colspan=2>hal" + str(conf[-1]) + "k</td>\n"
                 miolo += "<td colspan=3>" + str(conf[-2]) + "</td>\n"
@@ -161,8 +162,8 @@ class listEnoseConfHandler(tornado.web.RequestHandler):
                 for j in range(10):
                     miolo += "<td>" + str(conf[2+j]) + "</td>"
 
-                miolo += "</tr>"                
-                
+                miolo += "</tr>"
+
             miolo += '</tbody></table></div></div></div>'
             self.render('pages/index.html', title="Current list of ENoses", miolo = miolo,
                         top=file("pages/top.html").read(), bottom=file("pages/bottom.html").read())
@@ -173,7 +174,7 @@ class listEnoseConfHandler(tornado.web.RequestHandler):
 
         return
 
-    
+
 
 
 
@@ -189,7 +190,7 @@ class viewInductionHandler(tornado.web.RequestHandler):
 
         # Converting time from seconds to hours
         time = data[:,1]
-        
+
         pl.figure( figsize=(8,5) )
 
         gs = gridspec.GridSpec(2, 2, height_ratios=[1.5,1], width_ratios = [1,1] )
@@ -270,12 +271,12 @@ class viewInductionHandler(tornado.web.RequestHandler):
 
             ## Subsampling
             samples = samples[:: samples.shape[0]/2000, :]
-            
+
             ## Converting time to number and sorting by time
             samples[:,1] = matplotlib.dates.date2num( samples[:,1] )
             samples = samples[ samples[:,1].argsort() ]
 
-            
+
             ## generating the plot
             image = self.genImage( samples, dtI, dtF )
 
@@ -406,13 +407,13 @@ class actionEnoseConfigHandler(tornado.web.RequestHandler):
 
 
     def post(self):
-        
+
         if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
             self.render('pages/metadata_action.html')
-            
+
             date = self.get_argument('date', '')
-            
-            
+
+
             S = []
             for j in range(1,11):
                 S.append( self.get_argument('S'+str(j), '') )
@@ -435,4 +436,55 @@ class actionEnoseConfigHandler(tornado.web.RequestHandler):
 
         return
 
-    
+
+
+class serveFileHandler(tornado.web.RequestHandler):
+
+    def initialize(self, database, IPs):
+        self.db = database
+        self.IPs = IPs
+        return
+
+
+    def get(self):
+
+        if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
+
+            ## Getting input variables
+            datei = self.get_argument('datei', '')
+            timei = self.get_argument('timei', '')
+            datef = self.get_argument('datef', '')
+            timef = self.get_argument('timef', '')
+            enose = int( self.get_argument('enose', '') )
+
+
+            ## Additional buffer for plot
+            timebuffer = datetime.timedelta(seconds=1000)
+            dtI = datetime.datetime.strptime( datei + " " + timei.split(".")[0], "%Y-%m-%d %H:%M:%S" )
+            dtI_b = dtI - timebuffer
+            dtF = datetime.datetime.strptime( datef + " " + timef.split(".")[0], "%Y-%m-%d %H:%M:%S" )
+            dtF_b = dtF + timebuffer
+
+
+            ## Retrieving data from inductions
+            samples = np.asarray(
+                self.db.getSamples( enose, str(dtI_b), str(dtF_b) )
+            )
+
+            ## Subsampling
+            samples = samples[:: samples.shape[0]/2000, :]
+
+            ## Converting time to number and sorting by time
+            samples[:,1] = matplotlib.dates.date2num( samples[:,1] )
+            samples = samples[ samples[:,1].argsort() ]
+
+            ## Serving the resulting numpy array
+            self.write( pickle.dumps(samples) )
+
+
+        ## If in this else, someone tried to access this
+        else:
+            logging.warning('Access to metadata_action from outside IP list: ' + str(self.request.remote_ip) )
+
+
+        return
