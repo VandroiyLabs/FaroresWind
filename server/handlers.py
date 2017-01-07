@@ -1,30 +1,38 @@
+## database
 import psycopg2
-import faroreDB
 
+## system libraries
 import io
 import pickle
-import datetime
+import datetime, time
 import logging
+import json
 
+## gpg library 
+import gnupg
+
+## numerical libraries
 import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import pylab as pl
 import matplotlib.gridspec as gridspec
 
+## web libraries
 import tornado.auth
 import tornado.escape
 import tornado.gen
 import tornado.httpserver
-import logging
-import json
 import urlparse
-import time
 import threading
 import functools
 from tornado.ioloop import IOLoop
 from tornado.web import asynchronous, RequestHandler, Application
 from tornado.httpclient import AsyncHTTPClient
+
+## custom libraries
+import faroreDB
+
 
 
 
@@ -469,9 +477,10 @@ class actionEnoseConfigHandler(tornado.web.RequestHandler):
 
 class serveFileHandler(tornado.web.RequestHandler):
 
-    def initialize(self, database, IPs):
+    def initialize(self, database, IPs, homedir):
         self.db = database
         self.IPs = IPs
+        self.homedir = homedir
         return
 
 
@@ -485,6 +494,7 @@ class serveFileHandler(tornado.web.RequestHandler):
             datef = self.get_argument('datef', '')
             timef = self.get_argument('timef', '')
             enose = int( self.get_argument('enose', '') )
+            keyID = self.get_argument('k', '')
 
 
             ## Additional buffer for plot
@@ -507,8 +517,13 @@ class serveFileHandler(tornado.web.RequestHandler):
             samples[:,1] = matplotlib.dates.date2num( samples[:,1] )
             samples = samples[ samples[:,1].argsort() ]
 
+            ## encrypting for the client
+            msg  = json.dumps( samples.tolist() )
+            gpg  = gnupg.GPG( homedir = self.homedir )
+            emsg = gpg.encrypt(msg, keyID)
+            
             ## Serving the resulting numpy array
-            self.write( pickle.dumps(samples) )
+            self.write( str(emsg) )
 
 
         ## If in this else, someone tried to access this

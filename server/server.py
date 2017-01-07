@@ -53,11 +53,12 @@ class FaroreServer:
 
         args = { 'database' : self.db, 'IPs' : self.IPs }
         argsD = { 'database' : self.db, 'IPs' : self.IPs, 'tmpFolder' : self.tmpFolder }
-
+        args2 = { 'database' : self.db, 'IPs' : self.IPs, 'homedir' : self.homedir }
+        
         ## Starting tornado
         handlers = [
             (r'/', MainHandler),
-            (r'/serveTimeSeries', serveFileHandler, args),
+            (r'/serveTimeSeries', serveFileHandler, args2),
             (r'/DataIntegration', dataIntegrationHandler, argsD),
             (r'/input_metadata', inputMetadataHandler, args),
             (r'/input_enoseConf', inputEnoseConfigHandler, args),
@@ -94,9 +95,11 @@ class FaroreServer:
         self.IPs = config.readline().split("\n")[0].split(",")
 
         self.tmpFolder = config.readline().split("\n")[0]
-
+        
+        self.homedir = config.readline().split("\n")[0]
+        
         config.close()
-
+        
         return
 
 
