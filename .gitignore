@@ -3,6 +3,9 @@
 *#*#
 *farore_server.log
 *nohup.out
+*.key
+
+*dbgmd-*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
