@@ -4,6 +4,7 @@ import datetime
 
 # postgre database
 import psycopg2
+import gnupg
 
 # signal processing and math
 import signal
@@ -42,7 +43,8 @@ class FaroreServer:
         logging.basicConfig(filename='farore_server.log',
                             level=logging.DEBUG,
                             format='%(name)s @ %(levelname)s # %(asctime)s -- %(message)s')
-
+        
+        logging.getLogger('gnupg').disabled = True
 
         ## Getting configurations
         self.readConfigFile(conffile)

@@ -496,6 +496,9 @@ class serveFileHandler(tornado.web.RequestHandler):
             enose = int( self.get_argument('enose', '') )
             keyID = self.get_argument('k', '')
 
+            logging.warning('Data retrieval by ' + keyID +
+                            ' (IP:' + str(self.request.remote_ip) +
+                            ' ) from enose ' +  str(enose) )
 
             ## Additional buffer for plot
             timebuffer = datetime.timedelta(seconds=1000)
