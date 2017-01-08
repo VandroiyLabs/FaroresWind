@@ -562,7 +562,6 @@ class  updateInductionIndexHandler(tornado.web.RequestHandler):
 
             
             metadata = self.db.getInductionsMetadata(ind_id = id)[0]
-            print metadata
             
             # pre-buffer
             timebuffer = datetime.timedelta(minutes=metadata[3])
