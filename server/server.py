@@ -19,11 +19,11 @@ import tornado.web as web
 import logging
 
 ## Import internal modules
-from handlers.Main import *
-from handlers.Inductions import *
-from handlers.Metadata import *
-from handlers.DataServing import *
-from handlers.handler_DataIntegrationSocket import *
+from handler_Main import *
+from handler_Inductions import *
+from handler_Metadata import *
+from handler_DataServing import *
+from handler_DataIntegrationSocket import *
 import faroreDB
 
 

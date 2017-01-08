@@ -16,6 +16,7 @@ import pylab as pl
 import matplotlib.gridspec as gridspec
 
 ## web libraries
+import tornado
 import tornado.auth
 import tornado.escape
 import tornado.gen

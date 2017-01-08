@@ -8,6 +8,7 @@ import logging
 
 
 ## web libraries
+import tornado
 from tornado.ioloop import IOLoop
 from tornado.web import asynchronous, RequestHandler, Application
 from tornado.httpclient import AsyncHTTPClient
