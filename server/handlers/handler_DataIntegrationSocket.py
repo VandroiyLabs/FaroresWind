@@ -40,7 +40,7 @@ class dataIntegrationHandler(tornado.websocket.WebSocketHandler):
 
     ###
     # Dictionary of the state
-    # 
+    #
     # 0 -> doing nothin'
     # 1 -> started talking to another process
     # 2 -> processing file
@@ -54,35 +54,35 @@ class dataIntegrationHandler(tornado.websocket.WebSocketHandler):
         self.tmpFolder = tmpFolder
         return
 
-    
+
     ## THE CLIENT connected
     def open(self):
         print self.state
         logging.info("New client connected into DataIntegration from " +str(self.request.remote_ip) )
-        
+
         if self.state == 0:
             self.write_message("Free")
             dataIntegrationHandler.state = 1
             dataIntegrationHandler.currentClient = self
-            
+
         else:
             self.write_message("Busy")
-            
+
         return
-    
+
     ## The client sent the message
     def on_message(self, message):
 
         if dataIntegrationHandler.currentClient == self:
-            
+
             if message == "sending":
                 self.write_message("Waiting")
-            
-            
+
+
             elif 'My name:' in message:
                 self.enose_id =  int(message.split(':')[1])
-            
-            
+
+
             elif message == "sent":
 		print self.enose_id
 		for file in os.listdir(self.tmpFolder):
@@ -92,7 +92,7 @@ class dataIntegrationHandler(tornado.websocket.WebSocketHandler):
 			ym = filename.split('_')[2]
 			dia = filename.split('_')[3]
 		        os.system("python "+self.tmpFolder+"npy2csv_convert.py "+self.tmpFolder+filename
-                                  +".npy "+dia+" "+ym+" "+str(self.enose_id))	
+                                  +".npy "+dia+" "+ym+" "+str(self.enose_id))
         	        self.db.copy("measurement",self.tmpFolder+filename+".csv")
 		        os.system("mv "+self.tmpFolder+filename+ ".npy "+self.tmpFolder+filename.split('New')[1]+".npy")
 			os.system("zip "+self.tmpFolder+filename.split('New')[1]+".zip "+self.tmpFolder+filename.split('New')[1]+".npy")
@@ -100,17 +100,17 @@ class dataIntegrationHandler(tornado.websocket.WebSocketHandler):
 
 
                 dataIntegrationHandler.state = 0
-	
+
 	else:
             self.write_message("Wait for your turn. Current status: "
                                + str(dataIntegrationHandler.state) )
 
-        
+
         return
-        
+
     ## Client disconnected
     def on_close(self):
-        
+
         logging.info("Connected to DataIntegration closed from " +str(self.request.remote_ip) )
         if dataIntegrationHandler.currentClient == self:
             dataIntegrationHandler.currentClient = 0

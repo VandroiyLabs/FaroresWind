@@ -1,34 +1,30 @@
-# standard libraries
+## standard libraries
 import sys, os, time, io
 import datetime
 
-# postgre database
+## postgre database
 import psycopg2
 import gnupg
 
-# signal processing and math
+## signal processing and math
 import signal
 import numpy as np
 
-# to create threads
+## to create threads
 import multiprocessing as mp
 
-# For plot
-import matplotlib as mpl
-mpl.use('Agg')
-import pylab as pl
-
-# For the web service
+## For the web service
 import tornado.ioloop
 import tornado.web as web
 import logging
 
-
-# Our own library
+## Import internal modules
+from handlers.Main import *
+from handlers.Inductions import *
+from handlers.Metadata import *
+from handlers.DataServing import *
+from handlers.handler_DataIntegrationSocket import *
 import faroreDB
-from handlers import *
-from DataIntegrationSocket import *
-
 
 
 
@@ -43,7 +39,7 @@ class FaroreServer:
         logging.basicConfig(filename='farore_server.log',
                             level=logging.DEBUG,
                             format='%(name)s @ %(levelname)s # %(asctime)s -- %(message)s')
-        
+
         logging.getLogger('gnupg').disabled = True
 
         ## Getting configurations
@@ -56,7 +52,7 @@ class FaroreServer:
         args = { 'database' : self.db, 'IPs' : self.IPs }
         argsD = { 'database' : self.db, 'IPs' : self.IPs, 'tmpFolder' : self.tmpFolder }
         args2 = { 'database' : self.db, 'IPs' : self.IPs, 'homedir' : self.homedir }
-        
+
         ## Starting tornado
         handlers = [
             (r'/', MainHandler),
@@ -98,11 +94,11 @@ class FaroreServer:
         self.IPs = config.readline().split("\n")[0].split(",")
 
         self.tmpFolder = config.readline().split("\n")[0]
-        
+
         self.homedir = config.readline().split("\n")[0]
-        
+
         config.close()
-        
+
         return
 
 
