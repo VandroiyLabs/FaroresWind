@@ -67,13 +67,30 @@ class db:
         res = self.query(query).fetchall()
         return res
 
-    def getInductionsMetadata(self, sample = '', limit = 50):
+    def getInductionsMetadata(self, sample = '', ind_id = '', limit = 50):
+        """Searches metadatada from inductions.
+        
+        If ind_id is provided, sample is ignored. There is on
+        semantics in searching for ind_id & sample, as ind_id is
+        primary key.
+        
+        """
+
+        ## Constructing the query
         query = "SELECT * FROM INDUCTION "
-        if sample != '': query += "WHERE sample = '"+ sample +"' "
+        
+        if ind_id != '':
+            query += "WHERE ind_id = '"+ str(ind_id) +"' "
+        elif sample != '':
+            query += "WHERE sample = '"+ sample +"' "
+        
         query += "ORDER BY ind_id DESC LIMIT " + str(limit)
+
+        ## Processing the query
         res = self.query(query).fetchall()
         return res
-
+    
+    
     def getInductionList(self):
         query = "SELECT sample, count(*), avg(tc-t0) FROM INDUCTION GROUP BY SAMPLE;"
         res = self.query(query).fetchall()
@@ -107,6 +124,20 @@ class db:
 
         self.query( query )
 
+        return
+
+
+    def updateInductionIndexingMeasurement(self, ind_id, enose_id, datei, datef):
+        """Table MEASUREMENT has ind_id to be indexed for fast retrieval of
+        experiments. This function updates this column.
+
+        """
+
+        query  = "UPDATE MEASUREMENT SET ind_id = " + str(ind_id) + " "
+        query += "WHERE enose_id = " + str(enose_id) + " AND "
+        query += "      timestamp BETWEEN '" + datei + "' AND '" + datef + "' "
+                
+        self.query(query)
         return
 
 

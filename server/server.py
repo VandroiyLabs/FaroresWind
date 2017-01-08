@@ -67,6 +67,7 @@ class FaroreServer:
             (r'/metadata_action', actionMetadataHandler, args),
             (r'/enoseConf_action', actionEnoseConfigHandler, args),
             (r'/list_inductions', listInductionsHandler, args),
+            (r'/updateInductionIndex', updateInductionIndexHandler, args),
             (r'/list_enoseConf', listEnoseConfHandler, args),
             (r'/view', viewInductionHandler, args),
             (r'/showTimeSeries', showTimeSeriesHandler, args),

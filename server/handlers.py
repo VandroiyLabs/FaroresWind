@@ -119,7 +119,7 @@ class listInductionsHandler(tornado.web.RequestHandler):
 
             miolo += '<div class="page-header">' + \
                     '<div class="row"><div class="col-md-6"><table class="table table-striped">' + \
-                    '<thead><tr><th width=100px>Id</th><th>Sample name/description</th><th>Enose</th><th>Date</th><th>t0</th><th>tc</th><th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th></tr></thead>'+ \
+                    '<thead><tr><th width=100px>Id</th><th>Sample name/description</th><th>Enose</th><th>Date</th><th>t0</th><th>tc</th><th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th><th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th></tr></thead>'+ \
                     '<tbody>\n'
 
 
@@ -155,6 +155,10 @@ class listInductionsHandler(tornado.web.RequestHandler):
                         + "</form>\n"
 
                 miolo += "<td>"+link+"</td>"
+
+                miolo += "<td><a href=\"/updateInductionIndex?id=" + str(ind[0]) + "\">"
+                miolo+= "Update indexing...</a></td>"
+                
                 miolo += '</tr>\n\n'
 
             miolo += '</tbody></table></div></div></div>'
@@ -533,5 +537,55 @@ class serveFileHandler(tornado.web.RequestHandler):
         else:
             logging.warning('Access to metadata_action from outside IP list: ' + str(self.request.remote_ip) )
 
+
+        return
+
+
+
+
+
+class  updateInductionIndexHandler(tornado.web.RequestHandler):
+    
+    def initialize(self, database, IPs):
+        self.db = database
+        self.IPs = IPs
+        return
+    
+    
+    def get(self):
+
+        if self.request.remote_ip[:-2] == self.IPs[0]:
+                        
+            id = int( self.get_argument('id', '') )
+            logging.info('Updating indexing of ind_id in measurements by IP:' + str(self.request.remote_ip) +
+                         ' ) from ind_id ' +  str(id) )
+
+            
+            metadata = self.db.getInductionsMetadata(ind_id = id)[0]
+            print metadata
+            
+            # pre-buffer
+            timebuffer = datetime.timedelta(minutes=metadata[3])
+            # Initial time to retrieve
+            dtI_b = metadata[1] - timebuffer
+            # post-buffer
+            timebuffer = datetime.timedelta(minutes=metadata[4])
+            # Final time to retrieve
+            dtF_b = metadata[2] + timebuffer
+            
+            
+            ## Retrieving data from inductions
+            self.db.updateInductionIndexingMeasurement( id, int(metadata[-1]), str(dtI_b), str(dtF_b) )
+            
+            
+            logging.info('Updated indexing of ind_id in measurements by IP:' + str(self.request.remote_ip) +
+                            ' ) from ind_id ' +  str(id) )
+
+            self.write('<script>location = "/list_inductions"</script>')
+            
+
+        ## If in this else, someone tried to access this
+        else:
+            logging.warning('Access to metadata_action from outside IP list: ' + str(self.request.remote_ip) )
 
         return
