@@ -43,7 +43,7 @@ def exporter():
 
     ## Automatic updating system
     lastUpdateTimeStamp = datetime.datetime.now()    # first sets as starting point
-    updateInterval      = dt.timedelta(hours = 12)
+    updateInterval      = datetime.timedelta(minutes = 30)
 
     
     while True:
@@ -52,6 +52,9 @@ def exporter():
         time4Update = currTime - lastUpdateTimeStamp > updateInterval
 
         if doExport.value == 1 or time4Update:
+            
+            ## In case only time4Update was true
+            doExport.value = 1
 
             print "\n\nConnecting to server..."
 
