@@ -33,11 +33,26 @@ logging.getLogger("tornado.access").propagate = False
 
 
 
+
 def exporter():
+
+    ## Counts how many times the server was busy,
+    ## then quits...
+    busyCount = 0
+    maxBusyCount = 3
+
+    ## Automatic updating system
+    lastUpdateTimeStamp = datetime.datetime.now()    # first sets as starting point
+    updateInterval      = dt.timedelta(hours = 12)
+
     
     while True:
 
-        if doExport.value == 1:
+        currTime = datetime.datetime.now()
+        time4Update = currTime - lastUpdateTimeStamp > updateInterval
+
+        if doExport.value == 1 or time4Update:
+
             print "\n\nConnecting to server..."
 
             try:
@@ -45,42 +60,60 @@ def exporter():
                 ws = create_connection("ws://" + host + ":8799/DataIntegration")
 
                 response = ws.recv()
-                
+
                 ## Checking server status
                 if response == "Busy":
                     print "Server is busy."
-                    time.sleep(60.)
-                    
+                    busyCount += 1
+
+                    # max trials achieved, quitting trying to contat the server...
+                    if busyCount == maxBusyCount:
+                        print "Server not responsive!!"
+                        doExport.value = 0
+                        busyCount = 0
+
+
+                ## Server is ready to receive the data
                 elif response == "Free":
-                    
                     print "Server ready to process data."
-                    
+
+                    ## Resetting the counter for busy responses
+                    busyCount = 0
+
+                    ## Identifying itself for the server, and sending a warning
                     ws.send( "My name: " + str(sensorname.value) )
                     ws.send( "sending" )
                     print ws.recv()
-                    
+
+                    ## Exporting the Data
+                    # Sends a message to Enose to export the data
                     stopSwitch.value = 3
-                    
+                    # Waiting until ENOSE exported the data
                     while doExport.value == 1:
                         time.sleep(2.)
-                    
+
+                    ## Receing confirmation that the server received the last message
                     ws.send("sent")
                     print ws.recv()
-                    
+
+                    ## Closing the connection
                     ws.close()
-                    
+
+                    ## Updating the record for the last updating time stamp
+                    lastUpdateTimeStamp = datetime.datetime.now()    # first sets as starting point
+
                     doExport.value = 0
-                    
+
                 else:
                     print "Server is crazy."
-                
+
             except:
                 print "Server not responsive!!"
                 doExport.value = 0
 
-        
+
         time.sleep(5.)
-    
+
     return
 
 
@@ -97,10 +130,10 @@ def collector(enose, user, host, folder):
     while stopSwitch.value != 0:
 
         if stopSwitch.value == 3:
-            
+
             file_name = 'NewData_' + str(sensorname.value) + '_' \
                         + time.strftime("%Y-%m_%d_%H-%M-%S")
-            
+
             ##TO DO checar se arquivo foi salvo e exportado
             np.save( file_name+'.npy', enose.memory )
             outscp = os.system("scp " + file_name + ".npy "
@@ -109,25 +142,25 @@ def collector(enose, user, host, folder):
             if outscp == 0:
                 os.system("rm -f "+file_name+".npy")
                 enose.forget()
-            
+
             stopSwitch.value = 1
             doExport.value = -1
-        
-        
+
+
         else:
-            
+
             ## Getting new sample
             enose.sniff()
-            
+
             count +=1
             if count == 20:
                 # updating shared array
                 np.save( 'recent.npy', enose.memory[-5000:] )
                 count = 0
-            
-            
+
+
             key = True
-            
+
             while key:
                 time.sleep(0.01)
                 key = not ( 100 - ( ( time.time() % 1 )*1000 % 100 ) < 50 )
