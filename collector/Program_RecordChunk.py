@@ -128,6 +128,10 @@ def exporter():
 
 def collector(enose, user, host, folder):
 
+    ## Interval between measurements
+    intrval = 0.050
+
+    ## Counting for automatic plotting
     count = 0
 
     while stopSwitch.value != 0:
@@ -161,13 +165,14 @@ def collector(enose, user, host, folder):
                 np.save( 'recent.npy', enose.memory[-5000:] )
                 count = 0
 
-
+                
             key = True
-
+            time.sleep(0.005)
             while key:
-                time.sleep(0.01)
-                key = not ( 100 - ( ( time.time() % 1 )*1000 % 100 ) < 50 )
-
+                dif = intrval - ( time.time() % 1 )  % intrval
+                key = not ( dif  < 0.005 )
+                time.sleep( dif*0.6 )
+            
 
     np.save('Data.npy', enose.memory)
 

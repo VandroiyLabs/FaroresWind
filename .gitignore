@@ -5,6 +5,9 @@
 *nohup.out
 *.key
 
+## Folders for debugging and stuff..
+*test
+
 *dbgmd-*
 
 # Byte-compiled / optimized / DLL files
