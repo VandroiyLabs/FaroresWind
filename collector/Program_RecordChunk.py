@@ -133,46 +133,49 @@ def collector(enose, user, host, folder):
 
     ## Counting for automatic plotting
     count = 0
-
+    
     while stopSwitch.value != 0:
-
+        
+        ## Getting new sample
+        pre = time.time()
+        enose.sniff(nsamples=3)
+        e = time.time() - pre < 0.005
+        if e < 0.004: time.sleep(0.004 - e)
+        
+        ## Updating the local visualization tool
+        count +=1
+        if count == 20:
+            # updating shared array
+            np.save( 'recent.npy', enose.memory[-5000:] )
+            count = 0
+        
+        
+        ## Checking if data should be exported
         if stopSwitch.value == 3:
-
+            
             file_name = 'NewData_' + str(sensorname.value) + '_' \
                         + time.strftime("%Y-%m_%d_%H-%M-%S")
-
+            
             ##TO DO checar se arquivo foi salvo e exportado
             np.save( file_name+'.npy', enose.memory )
             outscp = os.system("scp " + file_name + ".npy "
                                + user + "@" + host + ":" + folder)
-
+            
             if outscp == 0:
                 os.system("rm -f "+file_name+".npy")
                 enose.forget()
-
+                
             stopSwitch.value = 1
             doExport.value = -1
-
-
-        else:
-
-            ## Getting new sample
-            enose.sniff()
-
-            count +=1
-            if count == 20:
-                # updating shared array
-                np.save( 'recent.npy', enose.memory[-5000:] )
-                count = 0
-
-                
-            key = True
-            time.sleep(0.005)
-            while key:
-                dif = intrval - ( time.time() % 1 )  % intrval
-                key = not ( dif  < 0.005 )
-                time.sleep( dif*0.6 )
             
+        
+        ## Clock
+        key = True
+        while key:
+            dif = intrval - ( time.time() % 1 )  % intrval
+            key = not ( dif  < 0.005 )
+            time.sleep( dif*0.6 )
+
 
     np.save('Data.npy', enose.memory)
 
