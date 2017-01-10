@@ -24,6 +24,7 @@ from handler_Inductions import *
 from handler_Metadata import *
 from handler_DataServing import *
 from handler_DataIntegrationSocket import *
+from handler_logging import *
 import faroreDB
 
 
@@ -56,6 +57,7 @@ class FaroreServer:
         ## Starting tornado
         handlers = [
             (r'/', MainHandler),
+            (r'/logging', loggingHandler, args),
             (r'/serveTimeSeries', serveFileHandler, args2),
             (r'/DataIntegration', dataIntegrationHandler, argsD),
             (r'/input_metadata', inputMetadataHandler, args),
