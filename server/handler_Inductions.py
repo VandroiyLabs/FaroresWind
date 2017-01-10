@@ -49,7 +49,7 @@ class listInductionsHandler(tornado.web.RequestHandler):
         if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
 
             miolo = '<div class="page-header">' + \
-                    '<div class="row"><div class="col-md-6"><table class="table table-striped">' + \
+                    '<table class="table table-striped">' + \
                     '<thead><tr><th width=100px>Sample id</th><th>Number</th><th>Avg duration</th></tr></thead>'+ \
                     '<tbody>\n'
 
@@ -65,10 +65,10 @@ class listInductionsHandler(tornado.web.RequestHandler):
 
             miolo += "<tr><td><a href='/list_inductions'>Total</a></td><td>"+str(total)+"</td><td>&nbsp;</td></tr>"
 
-            miolo += '</tbody></table></div></div></div>'
+            miolo += '</tbody></table></div>'
 
             miolo += '<div class="page-header">' + \
-                    '<div class="row"><div class="col-md-6"><table class="table table-striped">' + \
+                    '<table class="table table-striped">' + \
                     '<thead><tr><th width=100px>Id</th><th>Sample name/description</th><th>Enose</th><th>Date</th><th>t0</th><th>tc</th><th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th><th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th></tr></thead>'+ \
                     '<tbody>\n'
 
@@ -111,7 +111,7 @@ class listInductionsHandler(tornado.web.RequestHandler):
 
                 miolo += '</tr>\n\n'
 
-            miolo += '</tbody></table></div></div></div>'
+            miolo += '</tbody></table></div>'
             self.render('pages/index.html', title="List of inductions", miolo = miolo,
                         top=file("pages/top.html").read(), bottom=file("pages/bottom.html").read())
 

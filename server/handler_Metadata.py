@@ -38,7 +38,7 @@ class listEnoseConfHandler(tornado.web.RequestHandler):
         if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
 
             miolo = '<div class="page-header">' + \
-                    '<div class="row"><div class="col-md-6"><table class="table table-striped">' + \
+                    '<table class="table table-striped">' + \
                     '<thead><tr><th width=500px colspan=2>enose ID</th><th width=150px colspan=3>Location</th><th width=150px colspan=3>Date</th><th width=50px></th><th width=50px></th></tr></thead>'+ \
                     '<tbody>\n'
 
@@ -57,7 +57,7 @@ class listEnoseConfHandler(tornado.web.RequestHandler):
 
                 miolo += "</tr>"
 
-            miolo += '</tbody></table></div></div></div>'
+            miolo += '</tbody></table></div>'
             self.render('pages/index.html', title="Current list of ENoses", miolo = miolo,
                         top=file("pages/top.html").read(), bottom=file("pages/bottom.html").read())
 
