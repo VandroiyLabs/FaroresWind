@@ -56,12 +56,32 @@ class db:
         return self.query("SELECT count(*) FROM MEASUREMENT WHERE timestamp BETWEEN '"
                           +datei+"' AND '"+datef+"' ").fetchall()
 
+    
     def getSamples(self, nose_id, datei, datef):
+        """Retrieves the time series between the given time stamps for the
+        given enose_id. 
+        
+        If you want to retrieve the time series recorded for an
+        induction, use getSamplesInduction instead.
+        
+        """
         query =  "SELECT * FROM MEASUREMENT WHERE enose_id = " + str(nose_id) \
                  + " AND  timestamp BETWEEN '" + datei + "' AND '" + datef + "' "
         res = self.query(query)
         return res.fetchall()
-
+    
+    
+    def getSamplesInduction(self, ind_id, nose_id):
+        """Uses ind_id from metadata to get inductions. It's supposed to be
+        faster than using timestamp.
+        
+        """
+        query =  "SELECT * FROM MEASUREMENT WHERE ind_id = " + str(ind_id) \
+                 + " AND  enose_id = " + str(enose_id) + "' "
+        res = self.query(query)
+        return res.fetchall()
+    
+    
     def getEnoseConfs(self):
         query = "SELECT * FROM ENOSE_CONF"
         res = self.query(query).fetchall()

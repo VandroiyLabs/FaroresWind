@@ -106,36 +106,49 @@ class viewInductionHandler(tornado.web.RequestHandler):
     def get(self):
 
         if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
-
+            
             ## Getting input variables
-            datei = self.get_argument('datei', '')
-            timei = self.get_argument('timei', '')
-            datef = self.get_argument('datef', '')
-            timef = self.get_argument('timef', '')
+            inductionID = self.get_argument('INDID', '.')
             enose = int( self.get_argument('enose', '') )
 
+            if inductionID == '.':
+                
+                datei = self.get_argument('datei', '')
+                timei = self.get_argument('timei', '')
+                datef = self.get_argument('datef', '')
+                timef = self.get_argument('timef', '')
+                
+                ## Additional buffer for plot
+                timebuffer = datetime.timedelta(seconds=1000)
+                dtI = datetime.datetime.strptime( datei + " " + timei.split(".")[0], "%Y-%m-%d %H:%M:%S" )
+                dtI_b = dtI - timebuffer
+                dtF = datetime.datetime.strptime( datef + " " + timef.split(".")[0], "%Y-%m-%d %H:%M:%S" )
+                dtF_b = dtF + timebuffer
+                
+                
+                ## Retrieving data from inductions
+                samples = np.asarray(
+                    self.db.getSamples( enose, str(dtI_b), str(dtF_b) )
+                )
+                
+            else:
+                
+                inductionID = int( inductionID )
 
-            ## Additional buffer for plot
-            timebuffer = datetime.timedelta(seconds=1000)
-            dtI = datetime.datetime.strptime( datei + " " + timei.split(".")[0], "%Y-%m-%d %H:%M:%S" )
-            dtI_b = dtI - timebuffer
-            dtF = datetime.datetime.strptime( datef + " " + timef.split(".")[0], "%Y-%m-%d %H:%M:%S" )
-            dtF_b = dtF + timebuffer
-
-
-            ## Retrieving data from inductions
-            samples = np.asarray(
-                self.db.getSamples( enose, str(dtI_b), str(dtF_b) )
-            )
-
+                ## Retrieving data from inductions
+                samples = np.asarray(
+                    self.db.getSamplesInduction( inductionID, enose )
+                )
+            
+            
             ## Subsampling
             samples = samples[:: samples.shape[0]/2000, :]
-
+            
             ## Converting time to number and sorting by time
             samples[:,1] = matplotlib.dates.date2num( samples[:,1] )
             samples = samples[ samples[:,1].argsort() ]
-
-
+            
+            
             ## generating the plot
             image = self.genImage( samples, dtI, dtF )
 

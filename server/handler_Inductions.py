@@ -87,19 +87,16 @@ class listInductionsHandler(tornado.web.RequestHandler):
             for ind in listInds:
                 miolo += "<tr><td>" + str(ind[0]) + "</td>\n"
                 miolo += "<td>" + str(ind[5]) + "</td><td>hal" + str(ind[8])+"k</td>\n"
-
+                
                 date = str(ind[1])[:10]
                 t0   = str(ind[1])[10:]
                 tc   = str(ind[2])[10:]
-
+                
                 miolo += "<td>" + date + "</td><td>" + t0 + "</td><td>" + tc  + "</td>\n"
 
                 link = "<form action=\"./showInduction\" id=\"form" + str(ind[0]) + "\" method=\"post\">\n" \
+                       + "<input type=\"hidden\" name=\"INDID\" value=\""+str(ind[0])+"\" />\n" \
                         + "<input type=\"hidden\" name=\"enose\" value=\""+str(ind[8])+"\" />\n" \
-                        + "<input type=\"hidden\" name=\"datei\" value=\""+date+"\" />\n" \
-                        + "<input type=\"hidden\" name=\"timei\" value=\""+t0+"\" />\n" \
-                        + "<input type=\"hidden\" name=\"datef\" value=\""+date+"\" />\n" \
-                        + "<input type=\"hidden\" name=\"timef\" value=\""+tc+"\" />\n" \
                         + "<p><a href=\"javascript:{}\" onclick=\"document.getElementById('form" + str(ind[0]) \
                         + "').submit(); return false;\">See induction</a></p>\n" \
                         + "</form>\n"
