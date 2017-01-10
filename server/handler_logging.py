@@ -62,7 +62,7 @@ class loggingHandler(tornado.web.RequestHandler):
                         ## Styling warning and errors
                         STYLE=""
                         if logLevel == "WARNING": STYLE = "style=\"color: #FA2; font-weight: bold;\"" 
-                        if logLevel == "ERROR": STYLE = "style=\"color: #FF0; font-weight: bold;\"" 
+                        if logLevel == "ERROR": STYLE = "style=\"color: #F00; font-weight: bold;\"" 
                         
                         miolo += "<tr " + STYLE + "><td>"+loggerID+"</td><td>"+logLevel+"</td><td>"+logDate+" "+logTime[:8]+"</td><td>"+message+"</td></tr>\n"
                     
