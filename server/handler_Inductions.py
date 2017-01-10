@@ -132,17 +132,18 @@ class showInductionHandler(tornado.web.RequestHandler):
 
         if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
 
+            indid = self.get_argument('INDID', '.')
             datei = self.get_argument('datei', '')
             timei = self.get_argument('timei', '')
             datef = self.get_argument('datef', '')
             timef = self.get_argument('timef', '')
             enose = self.get_argument('enose', '')
-
-            miolo = "<img src=\"./view?" \
-                        + "datei=" + datei + "&datef=" + datef + \
+            
+            miolo = "<img src=\"./view?INDID=" + indid \
+                        + "&datei=" + datei + "&datef=" + datef + \
                         "&timei=" + timei + "&timef=" + timef + "&enose=" + enose + "\" " \
                         + " style=\"width: 80%;\"/>"
-
+            
             self.render('pages/index.html', title="Displaying induction", miolo = miolo,
                         top=file("pages/top.html").read(), bottom=file("pages/bottom.html").read())
 

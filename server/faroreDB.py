@@ -71,13 +71,13 @@ class db:
         return res.fetchall()
     
     
-    def getSamplesInduction(self, ind_id, nose_id):
+    def getSamplesInduction(self, ind_id, enose_id):
         """Uses ind_id from metadata to get inductions. It's supposed to be
         faster than using timestamp.
         
         """
         query =  "SELECT * FROM MEASUREMENT WHERE ind_id = " + str(ind_id) \
-                 + " AND  enose_id = " + str(enose_id) + "' "
+                 + " AND  enose_id = " + str(enose_id) + " "
         res = self.query(query)
         return res.fetchall()
     

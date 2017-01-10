@@ -110,7 +110,8 @@ class viewInductionHandler(tornado.web.RequestHandler):
             ## Getting input variables
             inductionID = self.get_argument('INDID', '.')
             enose = int( self.get_argument('enose', '') )
-
+            
+            
             if inductionID == '.':
                 
                 datei = self.get_argument('datei', '')
@@ -139,6 +140,10 @@ class viewInductionHandler(tornado.web.RequestHandler):
                 samples = np.asarray(
                     self.db.getSamplesInduction( inductionID, enose )
                 )
+                
+                mtd = self.db.getInductionsMetadata(self, ind_id = inductionID)[0]
+                dtI = mtd[1]
+                dtF = mtd[2]
             
             
             ## Subsampling
@@ -176,14 +181,13 @@ class showTimeSeriesHandler(tornado.web.RequestHandler):
     def post(self):
 
         if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
-
-
-            datei = self.get_argument('datei', " ")
-            timei = self.get_argument('timei', " ")
-            datef = self.get_argument('datef', " ")
-            timef = self.get_argument('timef', " ")
-            enose = self.get_argument('enose', " ")
-
+            
+            datei = self.get_argument('datei', "")
+            timei = self.get_argument('timei', "")
+            datef = self.get_argument('datef', "")
+            timef = self.get_argument('timef', "")
+            enose = self.get_argument('enose', "")
+            
             miolo = file('pages/showTimeSeriesForm.html').read()
             miolo = miolo.replace("{{ enose }}", enose)
             miolo = miolo.replace("{{ datei }}", datei)
