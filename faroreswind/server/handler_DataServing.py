@@ -45,61 +45,83 @@ class viewInductionHandler(tornado.web.RequestHandler):
         return
 
 
-    def genImage(self, data, dtI = 0, dtF = 0):
+	def genImage(self, data, dtI = 0, dtF = 0):
+	    
+	    time = data[:,1]
+	    
+	    pl.figure( figsize=(8,5) )
 
-        # Converting time from seconds to hours
-        time = data[:,1]
+	    gs = gridspec.GridSpec(2, 2, height_ratios=[1.5,1], width_ratios = [1,1] )
 
-        pl.figure( figsize=(8,5) )
+	    ## Starting with the sensors
+	    sensorPanel = pl.subplot(gs[0,:])
+	    hfmt = matplotlib.dates.DateFormatter('%H:%M')
+	    sensorPanel.xaxis.set_major_formatter(hfmt)
 
-        gs = gridspec.GridSpec(2, 2, height_ratios=[1.5,1], width_ratios = [1,1] )
+	    for j in range(4,12):
+		sensorPanel.plot(time, data[:,j], '-', label = 'R%d'%(j-3))
+	    
+	    maxy =  np.max( data[:,4:12] )  
+	    miny = np.min( data[:,4:12] )  
+	    sensorPanel.set_ylim(miny*0.95, maxy*1.03)
+	    sensorPanel.set_ylabel("Sensor resistance")
+	    sensorPanel.set_xlabel('Time (h)')
+	    sensorPanel.set_xlim( time.min() - 0.003, time.max() + 0.003)
+	    sensorPanel.set_xticks(np.linspace(time.min(), time.max(), 5) )
+	    sensorPanel.legend(loc='center left', bbox_to_anchor=(1, 0.5), prop={'size':10.5})
+	    sensorPanel.grid(True)
+	    
+	    ## Drawing line when induction happened
+	    if dtI != 0 and dtF != 0:
+		
+		tI = matplotlib.dates.date2num( dtI )
+		tF = matplotlib.dates.date2num( dtF )
+		
+		sensorPanel.plot( [tI, tI], [miny*0.5 , maxy*2], '--', color=(1.0,0.,0.0), lw=3., alpha=0.3, zorder=-1 )
+		sensorPanel.plot( [tF, tF], [miny*0.5 , maxy*2], '--', color=(1.0,0.,0.0), lw=3., alpha=0.3, zorder=-1 )      
+	   
+	    # creating the title
+	    Dfmt = matplotlib.dates.DateFormatter('%Y-%m-%d')
+	    Date0 = str(Dfmt(time[0]))
+	    Date1 = str(Dfmt(time[-1]))
+	    if Date0 == Date1:
+		pl.title(Date0)
+	    else:
+		pl.title("From %s to %s"%(Date0, Date1))
 
-        ## Starting with the sensorS
-        sensorPanel = pl.subplot(gs[0,:])
-        maxy = 0
-        miny = 1e100
-        for j in range(4,12):
-            sensorPanel.plot(time, data[:,j], '-')
 
-        maxy = np.max( np.max( data[:,4:12] ) )
-        miny = np.min( np.min( data[:,4:12] ) )
-        sensorPanel.set_ylim(miny*0.9, maxy*1.1)
+	    ## Temperature and humidity
+	    tempPanel = pl.subplot(gs[1,0])
+	    tempPanel.plot(time, data[:,2], '-')
+	    tempPanel.xaxis.set_major_formatter(hfmt)
+	    tempPanel.set_ylabel("Temperature")
+	    tempPanel.set_xlabel('Time (h)')
+	    tempPanel.set_xlim( time.min() - 0.003, time.max() + 0.003)
+	    tempPanel.set_xticks(np.linspace(time.min(), time.max(), 4) )
+	    tempPanel.set_ylim(data[:,2].min()-50, data[:,2].max()+50)
+	    tempPanel.set_yticks(np.linspace(data[:,2].min(), data[:,2].max(), 5,  dtype = int))
+	    
+	    
+	    humdPanel = pl.subplot(gs[1,1])
+	    humdPanel.plot(time, data[:,3], '-')
+	    humdPanel.xaxis.set_major_formatter(hfmt)
+	    humdPanel.set_ylabel("Humidity")
+	    humdPanel.set_xlabel('Time (h)')
+	    humdPanel.set_xlim( time.min() - 0.003, time.max() + 0.003)
+	    humdPanel.set_xticks(np.linspace(time.min(), time.max(), 4) )
+	    humdPanel.set_ylim(data[:,3].min()-50, data[:,3].max()+50)
+	    humdPanel.set_yticks(np.linspace(data[:,3].min(), data[:,3].max(), 5, dtype = int))
+	    
+	    pl.tight_layout()
+	    
+	    memdata = io.BytesIO()
+	    pl.savefig(memdata, format='png', dpi=400，　 bbox_inches='tight')
+	    
+	    
+	    pl.close()
 
-        ## Drawing line when induction happened
-        if dtI != 0 and dtF != 0:
-            tI = matplotlib.dates.date2num( dtI )
-            tF = matplotlib.dates.date2num( dtF )
-
-            sensorPanel.plot( [tI, tI], [miny*0.5 , maxy*2], '--', color=(1.0,0.,0.0), lw=3., alpha=0.3, zorder=-1 )
-            sensorPanel.plot( [tF, tF], [miny*0.5 , maxy*2], '--', color=(1.0,0.,0.0), lw=3., alpha=0.3, zorder=-1 )
-
-
-        sensorPanel.set_ylabel("Sensor resistance")
-        sensorPanel.set_xlabel('Time (h)')
-        sensorPanel.set_xlim( time.min() - 0.01, time.max() + 0.01)
-        sensorPanel.grid(True)
-
-        ## Temperature and humidity
-        tempPanel = pl.subplot(gs[1,0])
-        tempPanel.plot(time, data[:,2], '-')
-        tempPanel.set_ylabel("Temperature")
-        tempPanel.set_xlabel('Time (h)')
-        tempPanel.set_xlim( time.min() - 0.01, time.max() + 0.01)
-
-        humdPanel = pl.subplot(gs[1,1])
-        humdPanel.plot(time, data[:,3], '-')
-        humdPanel.set_ylabel("Humidity")
-        humdPanel.set_xlabel('Time (h)')
-        humdPanel.set_xlim( time.min() - 0.01, time.max() + 0.01)
-
-        pl.tight_layout()
-
-        memdata = io.BytesIO()
-        pl.savefig(memdata, format='png', dpi=400)
-        pl.close()
-
-        image = memdata.getvalue()
-        return image
+	    image = memdata.getvalue()
+	    return image
 
 
 
