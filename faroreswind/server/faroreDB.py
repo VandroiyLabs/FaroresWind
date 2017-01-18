@@ -56,32 +56,32 @@ class db:
         return self.query("SELECT count(*) FROM MEASUREMENT WHERE timestamp BETWEEN '"
                           +datei+"' AND '"+datef+"' ").fetchall()
 
-    
+
     def getSamples(self, nose_id, datei, datef):
         """Retrieves the time series between the given time stamps for the
-        given enose_id. 
-        
+        given enose_id.
+
         If you want to retrieve the time series recorded for an
         induction, use getSamplesInduction instead.
-        
+
         """
         query =  "SELECT * FROM MEASUREMENT WHERE enose_id = " + str(nose_id) \
                  + " AND  timestamp BETWEEN '" + datei + "' AND '" + datef + "' "
         res = self.query(query)
         return res.fetchall()
-    
-    
+
+
     def getSamplesInduction(self, ind_id, enose_id):
         """Uses ind_id from metadata to get inductions. It's supposed to be
         faster than using timestamp.
-        
+
         """
         query =  "SELECT * FROM MEASUREMENT WHERE ind_id = " + str(ind_id) \
                  + " AND  enose_id = " + str(enose_id) + " "
         res = self.query(query)
         return res.fetchall()
-    
-    
+
+
     def getEnoseConfs(self):
         query = "SELECT * FROM ENOSE_CONF"
         res = self.query(query).fetchall()
@@ -89,28 +89,28 @@ class db:
 
     def getInductionsMetadata(self, sample = '', ind_id = '', limit = 50):
         """Searches metadatada from inductions.
-        
+
         If ind_id is provided, sample is ignored. There is on
         semantics in searching for ind_id & sample, as ind_id is
         primary key.
-        
+
         """
 
         ## Constructing the query
         query = "SELECT * FROM INDUCTION "
-        
+
         if ind_id != '':
             query += "WHERE ind_id = '"+ str(ind_id) +"' "
         elif sample != '':
             query += "WHERE sample = '"+ sample +"' "
-        
+
         query += "ORDER BY ind_id DESC LIMIT " + str(limit)
 
         ## Processing the query
         res = self.query(query).fetchall()
         return res
-    
-    
+
+
     def getInductionList(self):
         query = "SELECT sample, count(*), avg(tc-t0) FROM INDUCTION GROUP BY SAMPLE;"
         res = self.query(query).fetchall()
@@ -156,7 +156,22 @@ class db:
         query  = "UPDATE MEASUREMENT SET ind_id = " + str(ind_id) + " "
         query += "WHERE enose_id = " + str(enose_id) + " AND "
         query += "      timestamp BETWEEN '" + datei + "' AND '" + datef + "' "
-                
+
+        self.query(query)
+        return
+
+    def updateAllInductionIndexingMeasurement(self ):
+        """Table MEASUREMENT has ind_id to be indexed for fast retrieval of
+        experiments. This function updates this column.
+
+        """
+
+        query  = "UPDATE MEASUREMENT AS M SET M.ind_id = I.ind_id  "
+        query += "FROM INDUCTION AS I "
+        query += "WHERE M.ind_id IS NULL AND "
+        query += "M.enose_id = I.enose_id  AND "
+        query += "M.timestamp BETWEEN t0 - (delta0 ||' minute')::INTERVAL AND tc + (deltac ||' minute')::INTERVAL "
+
         self.query(query)
         return
 
