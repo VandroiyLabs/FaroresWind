@@ -35,6 +35,8 @@ import faroreDB
 class FaroreServer:
 
     def __init__(self, conffile = 'config'):
+        """ This starts the server.
+        """
 
         ## Setting up the logging
         logging.basicConfig(filename='farore_server.log',
@@ -86,6 +88,10 @@ class FaroreServer:
 
 
     def readConfigFile(self, configFile):
+        """ This method reads the configuration file, and gets the metadata to access 
+        the database, list of IPs allowed to connect to the server, and the directory 
+        where the GPG keys are stored.
+        """
 
         config = open(configFile, 'r')
 
