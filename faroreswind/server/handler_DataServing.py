@@ -91,6 +91,9 @@ class viewInductionHandler(tornado.web.RequestHandler):
 
 
 	    ## Temperature and humidity
+	    Tstep = (data[:,2].max() - data[:,2].min())/20
+	    Hstep = (data[:,3].max() - data[:,3].min())/20
+
 	    tempPanel = pl.subplot(gs[1,0])
 	    tempPanel.plot(time, data[:,2], '-')
 	    tempPanel.xaxis.set_major_formatter(hfmt)
@@ -98,7 +101,7 @@ class viewInductionHandler(tornado.web.RequestHandler):
 	    tempPanel.set_xlabel('Time (h)')
 	    tempPanel.set_xlim( time.min() - 0.003, time.max() + 0.003)
 	    tempPanel.set_xticks(np.linspace(time.min(), time.max(), 4) )
-	    tempPanel.set_ylim(data[:,2].min()-50, data[:,2].max()+50)
+	    tempPanel.set_ylim(data[:,2].min()-Tstep, data[:,2].max()+Tstep)
 	    tempPanel.set_yticks(np.linspace(data[:,2].min(), data[:,2].max(), 5,  dtype = int))
 	    
 	    
@@ -109,7 +112,7 @@ class viewInductionHandler(tornado.web.RequestHandler):
 	    humdPanel.set_xlabel('Time (h)')
 	    humdPanel.set_xlim( time.min() - 0.003, time.max() + 0.003)
 	    humdPanel.set_xticks(np.linspace(time.min(), time.max(), 4) )
-	    humdPanel.set_ylim(data[:,3].min()-50, data[:,3].max()+50)
+	    humdPanel.set_ylim(data[:,3].min()-Hstep, data[:,3].max()+Hstep)
 	    humdPanel.set_yticks(np.linspace(data[:,3].min(), data[:,3].max(), 5, dtype = int))
 	    
 	    pl.tight_layout()
