@@ -2,7 +2,7 @@
 import psycopg2
 
 ## system libraries
-import io
+import io, os
 import pickle
 import datetime, time
 import logging
@@ -31,6 +31,7 @@ from tornado.httpclient import AsyncHTTPClient
 ## custom libraries
 import faroreDB
 
+rootdir = os.path.dirname(__file__)
 
 
 
@@ -87,11 +88,11 @@ class listInductionsHandler(tornado.web.RequestHandler):
             for ind in listInds:
                 miolo += "<tr><td>" + str(ind[0]) + "</td>\n"
                 miolo += "<td>" + str(ind[5]) + "</td><td>hal" + str(ind[8])+"k</td>\n"
-                
+
                 date = str(ind[1])[:10]
                 t0   = str(ind[1])[10:]
                 tc   = str(ind[2])[10:]
-                
+
                 miolo += "<td>" + date + "</td><td>" + t0 + "</td><td>" + tc  + "</td>\n"
 
                 link = "<form action=\"./showInduction\" id=\"form" + str(ind[0]) + "\" method=\"post\">\n" \
@@ -109,8 +110,8 @@ class listInductionsHandler(tornado.web.RequestHandler):
                 miolo += '</tr>\n\n'
 
             miolo += '</tbody></table></div>'
-            self.render('pages/index.html', title="List of inductions", miolo = miolo,
-                        top=file("pages/top.html").read(), bottom=file("pages/bottom.html").read())
+            self.render(rootdir+'/pages/index.html', title="List of inductions", miolo = miolo,
+                        top=file(rootdir+"/pages/top.html").read(), bottom=file(rootdir+"/pages/bottom.html").read())
 
         ## If in this else, someone tried to access this
         else:
@@ -138,14 +139,14 @@ class showInductionHandler(tornado.web.RequestHandler):
             datef = self.get_argument('datef', '')
             timef = self.get_argument('timef', '')
             enose = self.get_argument('enose', '')
-            
+
             miolo = "<img src=\"./view?INDID=" + indid \
                         + "&datei=" + datei + "&datef=" + datef + \
                         "&timei=" + timei + "&timef=" + timef + "&enose=" + enose + "\" " \
                         + " style=\"width: 80%;\"/>"
-            
-            self.render('pages/index.html', title="Displaying induction", miolo = miolo,
-                        top=file("pages/top.html").read(), bottom=file("pages/bottom.html").read())
+
+            self.render(rootdir+'/pages/index.html', title="Displaying induction", miolo = miolo,
+                        top=file(rootdir+"/pages/top.html").read(), bottom=file(rootdir+"/pages/bottom.html").read())
 
         return
 
@@ -160,9 +161,9 @@ class inputMetadataHandler(tornado.web.RequestHandler):
     def get(self):
 
         if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
-            miolo = file('pages/input_metadata.html').read()
-            self.render('pages/index.html', title="Farore's wind", miolo = miolo,
-                        top=file("pages/top.html").read(), bottom=file("pages/bottom.html").read())
+            miolo = file(rootdir+'/pages/input_metadata.html').read()
+            self.render(rootdir+'/pages/index.html', title="Farore's wind", miolo = miolo,
+                        top=file(rootdir+"/pages/top.html").read(), bottom=file(rootdir+"/pages/bottom.html").read())
 
         ## If in this else, someone tried to access this
         else:
@@ -183,7 +184,7 @@ class actionMetadataHandler(tornado.web.RequestHandler):
     def post(self):
 
         if self.request.remote_ip[:-2] == self.IPs[0]:
-            self.render('pages/metadata_action.html')
+            self.render(rootdir+'/pages/metadata_action.html')
 
             date = self.get_argument('date', '')
             t0 = self.get_argument('t0', '')

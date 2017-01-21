@@ -2,7 +2,7 @@
 import psycopg2
 
 ## system libraries
-import io
+import io, os
 import pickle
 import datetime, time
 import logging
@@ -33,6 +33,7 @@ from tornado.httpclient import AsyncHTTPClient
 ## custom libraries
 import faroreDB
 
+rootdir = os.path.dirname(__file__)
 
 
 
@@ -106,54 +107,54 @@ class viewInductionHandler(tornado.web.RequestHandler):
     def get(self):
 
         if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
-            
+
             ## Getting input variables
             inductionID = self.get_argument('INDID', '.')
             enose = int( self.get_argument('enose', '') )
-            
-            
+
+
             if inductionID == '.':
-                
+
                 datei = self.get_argument('datei', '')
                 timei = self.get_argument('timei', '')
                 datef = self.get_argument('datef', '')
                 timef = self.get_argument('timef', '')
-                
+
                 ## Additional buffer for plot
                 timebuffer = datetime.timedelta(seconds=1000)
                 dtI = datetime.datetime.strptime( datei + " " + timei.split(".")[0], "%Y-%m-%d %H:%M:%S" )
                 dtI_b = dtI - timebuffer
                 dtF = datetime.datetime.strptime( datef + " " + timef.split(".")[0], "%Y-%m-%d %H:%M:%S" )
                 dtF_b = dtF + timebuffer
-                
-                
+
+
                 ## Retrieving data from inductions
                 samples = np.asarray(
                     self.db.getSamples( enose, str(dtI_b), str(dtF_b) )
                 )
-                
+
             else:
-                
+
                 inductionID = int( inductionID )
 
                 ## Retrieving data from inductions
                 samples = np.asarray(
                     self.db.getSamplesInduction( inductionID, enose )
                 )
-                
+
                 mtd = self.db.getInductionsMetadata(self, ind_id = inductionID)[0]
                 dtI = mtd[1]
                 dtF = mtd[2]
-            
-            
+
+
             ## Subsampling
             samples = samples[:: samples.shape[0]/2000, :]
-            
+
             ## Converting time to number and sorting by time
             samples[:,1] = matplotlib.dates.date2num( samples[:,1] )
             samples = samples[ samples[:,1].argsort() ]
-            
-            
+
+
             ## generating the plot
             image = self.genImage( samples, dtI, dtF )
 
@@ -181,14 +182,14 @@ class showTimeSeriesHandler(tornado.web.RequestHandler):
     def post(self):
 
         if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
-            
+
             datei = self.get_argument('datei', "")
             timei = self.get_argument('timei', "")
             datef = self.get_argument('datef', "")
             timef = self.get_argument('timef', "")
             enose = self.get_argument('enose', "")
-            
-            miolo = file('pages/showTimeSeriesForm.html').read()
+
+            miolo = file(rootdir+'/pages/showTimeSeriesForm.html').read()
             miolo = miolo.replace("{{ enose }}", enose)
             miolo = miolo.replace("{{ datei }}", datei)
             miolo = miolo.replace("{{ timei }}", timei)
@@ -202,8 +203,8 @@ class showTimeSeriesHandler(tornado.web.RequestHandler):
                         "&timei=" + timei + "&timef=" + timef + "&enose=" + enose + "\" " \
                         + " style=\"width: 80%;\"/>"
 
-            self.render('pages/index.html', title="Displaying induction", miolo = miolo,
-                        top=file("pages/top.html").read(), bottom=file("pages/bottom.html").read())
+            self.render(rootdir+'/pages/index.html', title="Displaying induction", miolo = miolo,
+                        top=file(rootdir+"/pages/top.html").read(), bottom=file(rootdir+"/pages/bottom.html").read())
 
         return
 

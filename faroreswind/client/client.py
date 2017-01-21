@@ -42,6 +42,7 @@ class client:
         url += "datei=" + datei + "&timei=" + timei
         url += "&datef=" + datef + "&timef=" + timef
         url += "&enose=" + str(enose) + "&k=" + self.config['gpg_keyid']
+        print url
 
         msg = urllib2.urlopen(url).read()
         gpg = gnupg.GPG(verbose = True, homedir=self.config['gpg_homedir'])

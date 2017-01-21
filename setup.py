@@ -30,14 +30,9 @@ setup(
 
     license='GPL-3.0',
 
-    # See https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         'Development Status :: 3 - Alpha',
-        'Intended Audience :: Recordings from electronic nose',
-        'Topic :: Data analysis :: Electronic nose :: Sensors ',
-
         'License :: GPL-3.0',
-
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
@@ -45,15 +40,18 @@ setup(
 
     keywords='electronic nose, sensors, MOX',
 
-    packages=[  'faroreswind.collector',
-                'faroreswind.server',
-                'faroreswind.client'
-                ],
+    packages = [
+        'faroreswind',
+        'faroreswind.collector',
+        'faroreswind.server',
+        'faroreswind.client'
+    ],
+
+    package_data = {
+        '' : ['server/pages/*', 'server/pages/css/*', 'server/pages/js/*', 'server/pages/fonts/*']
+    },
 
     install_requires=[],
-
-
     extras_require={},
-    package_data={},
 
 )

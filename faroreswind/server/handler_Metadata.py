@@ -2,7 +2,7 @@
 import psycopg2
 
 ## system libraries
-import io
+import io, os
 import datetime, time
 import logging
 
@@ -22,6 +22,7 @@ from tornado.httpclient import AsyncHTTPClient
 ## custom libraries
 import faroreDB
 
+rootdir = os.path.dirname(__file__)
 
 
 
@@ -58,8 +59,8 @@ class listEnoseConfHandler(tornado.web.RequestHandler):
                 miolo += "</tr>"
 
             miolo += '</tbody></table></div>'
-            self.render('pages/index.html', title="Current list of ENoses", miolo = miolo,
-                        top=file("pages/top.html").read(), bottom=file("pages/bottom.html").read())
+            self.render(rootdir+'/pagess/index.html', title="Current list of ENoses", miolo = miolo,
+                        top=file(rootdir+"/pagess/top.html").read(), bottom=file(rootdir+"/pagess/bottom.html").read())
 
         ## If in this else, someone tried to access this
         else:
@@ -79,9 +80,9 @@ class inputEnoseConfigHandler(tornado.web.RequestHandler):
     def get(self):
 
         if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
-            miolo = file('pages/input_enose_config.html').read()
-            self.render('pages/index.html', title="Farore's wind", miolo = miolo,
-                        top=file("pages/top.html").read(), bottom=file("pages/bottom.html").read())
+            miolo = file(rootdir+'/pagess/input_enose_config.html').read()
+            self.render(rootdir+'/pagess/index.html', title="Farore's wind", miolo = miolo,
+                        top=file(rootdir+"/pagess/top.html").read(), bottom=file(rootdir+"/pagess/bottom.html").read())
 
         ## If in this else, someone tried to access this
         else:
@@ -104,7 +105,7 @@ class actionEnoseConfigHandler(tornado.web.RequestHandler):
     def post(self):
 
         if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
-            self.render('pages/metadata_action.html')
+            self.render(rootdir+'/pagess/metadata_action.html')
 
             date = self.get_argument('date', '')
 

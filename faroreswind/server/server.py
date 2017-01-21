@@ -19,16 +19,13 @@ import tornado.web as web
 import logging
 
 ## Import internal modules
+import faroreDB
 from handler_Main import *
 from handler_Inductions import *
 from handler_Metadata import *
 from handler_DataServing import *
 from handler_DataIntegrationSocket import *
 from handler_logging import *
-import faroreDB
-
-
-
 
 
 
@@ -48,7 +45,7 @@ class FaroreServer:
 
         ## Starting the database
         self.db = faroreDB.db(self.db_username,
-                              self.db_password, self.db_database)
+                                self.db_password, self.db_database)
 
         args = { 'database' : self.db, 'IPs' : self.IPs }
         argsD = { 'database' : self.db, 'IPs' : self.IPs, 'tmpFolder' : self.tmpFolder }
@@ -63,7 +60,7 @@ class FaroreServer:
             (r'/input_metadata', inputMetadataHandler, args),
             (r'/input_enoseConf', inputEnoseConfigHandler, args),
             (r'/metadata_action', actionMetadataHandler, args),
-            (r'/enoseConf_action', actionEnoseConfigHandler, args),
+            (r'/enoseConf_action',actionEnoseConfigHandler, args),
             (r'/list_inductions', listInductionsHandler, args),
             (r'/updateInductionIndex', updateInductionIndexHandler, args),
             (r'/list_enoseConf', listEnoseConfHandler, args),
@@ -78,7 +75,7 @@ class FaroreServer:
             )
 
         application = web.Application(handlers, **settings)
-        application.listen(8799)
+        application.listen(self.port)
         tornado.ioloop.IOLoop.instance().start()
 
         return
@@ -88,6 +85,8 @@ class FaroreServer:
     def readConfigFile(self, configFile):
 
         config = open(configFile, 'r')
+
+        self.port = int( config.readline().split("\n")[0] )
 
         self.db_username = config.readline().split("\n")[0]
         self.db_password = config.readline().split("\n")[0]

@@ -1,9 +1,9 @@
 from server import *
-from faroreDB import *
+import faroreDB
 
-from handler_DataIntegration import *
-from handler_DataServing import *
-from handler_Inductions import *
-from handler_logging import *
-from handler_Main import *
-from handler_Metadata import *
+import handler_DataIntegrationSocket
+import handler_DataServing
+import handler_Inductions
+import handler_logging
+import handler_Main
+import handler_Metadata

@@ -34,6 +34,7 @@ from tornado.httpclient import AsyncHTTPClient
 import faroreDB
 
 
+
 class dataIntegrationHandler(tornado.websocket.WebSocketHandler):
 
     state = 0
@@ -60,7 +61,7 @@ class dataIntegrationHandler(tornado.websocket.WebSocketHandler):
     def open(self):
         print self.state
         logging.info("DataIntgr. New client connected into DataIntegration from " +str(self.request.remote_ip) )
-        
+
         if self.state == 0:
             self.write_message("Free")
             dataIntegrationHandler.state = 1
@@ -75,58 +76,58 @@ class dataIntegrationHandler(tornado.websocket.WebSocketHandler):
     def on_message(self, message):
 
         if dataIntegrationHandler.currentClient == self:
-            
+
             if message == "sending":
                 logging.info("DataIntgr. Client exporting and sending data (from " +str(self.request.remote_ip)+ ")" )
                 self.write_message("Waiting")
-                
-                
+
+
             elif 'My name:' in message:
                 self.enose_id =  int(message.split(':')[1])
                 logging.info("DataIntgr. Client identified as hal" +str(self.enose_id)+ "k (from " +str(self.request.remote_ip)+ ")" )
-                
-                
+
+
             elif message == "sent":
-		print self.enose_id
+                print self.enose_id
                 logging.info("DataIntgr. Client sent data (from " +str(self.request.remote_ip)+ ")" )
-                
-		for file in os.listdir(self.tmpFolder):                    
-    		    if file.startswith("NewData_"+str(self.enose_id)):
+
+                for file in os.listdir(self.tmpFolder):
+                    if file.startswith("NewData_"+str(self.enose_id)):
 
                         ## Removing extension
-			filename = file[:-4]
+                        filename = file[:-4]
                         logging.info("DataIntgr. Processing file " +filename+ " (from " +str(self.request.remote_ip)+ ")" )
-			self.write_message("Processing")
-                        
-                        
+                        self.write_message("Processing")
+
+
                         ## Converting into CSV file
-			ym = filename.split('_')[2]
-			dia = filename.split('_')[3]
-		        os.system("python "+self.tmpFolder+"npy2csv_convert.py "+self.tmpFolder+filename
-                                  +".npy "+dia+" "+ym+" "+str(self.enose_id))
-                        
+                        ym = filename.split('_')[2]
+                        dia = filename.split('_')[3]
+                        os.system("python "+self.tmpFolder+"npy2csv_convert.py "+self.tmpFolder+filename
+                                    +".npy "+dia+" "+ym+" "+str(self.enose_id))
+
                         ## Importing into the DATABASE
-        	        self.db.copy("measurement",self.tmpFolder+filename+".csv")
-                        
+                        self.db.copy("measurement",self.tmpFolder+filename+".csv")
+
                         logging.info("DataIntgr. New data processed and stored (from " +str(self.request.remote_ip)+ ")" )
-                        
+
                         ## Cleaning files
-		        os.system("mv "+self.tmpFolder+filename+ ".npy "+self.tmpFolder+filename.split('New')[1]+".npy")
-			os.system("zip "+self.tmpFolder+filename.split('New')[1]+".zip "+self.tmpFolder+filename.split('New')[1]+".npy")
+                        os.system("mv "+self.tmpFolder+filename+ ".npy "+self.tmpFolder+filename.split('New')[1]+".npy")
+                        os.system("zip "+self.tmpFolder+filename.split('New')[1]+".zip "+self.tmpFolder+filename.split('New')[1]+".npy")
                         os.system("rm -f "+self.tmpFolder+filename+ ".csv")
-                                                
-                        
+
+
                 ## Finishing the process
-                logging.info("DataIntgr. Done with newly data from " +str(self.request.remote_ip) )        
+                logging.info("DataIntgr. Done with newly data from " +str(self.request.remote_ip) )
                 dataIntegrationHandler.state = 0
 
-	else:
+        else:
             self.write_message("Wait for your turn. Current status: "
-                               + str(dataIntegrationHandler.state) )
+                                    + str(dataIntegrationHandler.state) )
             print "Client disconnected."
 
-
         return
+
 
     ## Client disconnected
     def on_close(self):
