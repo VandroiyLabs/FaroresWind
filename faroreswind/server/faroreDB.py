@@ -160,6 +160,21 @@ class db:
         self.query(query)
         return
 
+    def updateAllInductionIndexingMeasurement(self ):
+        """Table MEASUREMENT has ind_id to be indexed for fast retrieval of
+        experiments. This function updates this column.
+
+        """
+
+        query  = "UPDATE MEASUREMENT AS M SET M.ind_id = I.ind_id  "
+        query += "FROM INDUCTION AS I "
+        query += "WHERE M.ind_id IS NULL AND "
+        query += "M.enose_id = I.enose_id  AND "
+        query += "M.timestamp BETWEEN t0 - (delta0 ||' minute')::INTERVAL AND tc + (deltac ||' minute')::INTERVAL "
+
+        self.query(query)
+        return
+
 
     def insertInduction(self, date, t0, tc, delta0, deltac, sample, weather, enose_id):
         query = "INSERT INTO INDUCTION(t0, tc, delta0, deltac, sample, weather_info, conf_id, enose_id) VALUES ("
