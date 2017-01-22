@@ -320,13 +320,13 @@ def daemon( enoseID ):
     sniffer = mp.Process(target=collector, args=(enose, user, host, folder))
     sniffer.start()
 
-    exporter_th = mp.Process(target=exporter, args=(host))
+    exporter_th = mp.Process(target=exporter, args=(host,))
     exporter_th.start()
 
 
     print( "Starting web service (use port " + str(port) + ")" )
     is_closing = False
-    webserv = mp.Process(target=webservice, args=([port]))
+    webserv = mp.Process(target=webservice, args=(port,))
     webserv.start()
 
 
