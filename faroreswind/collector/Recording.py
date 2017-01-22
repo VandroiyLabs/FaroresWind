@@ -26,13 +26,6 @@ from websocket import create_connection
 
 
 
-hn = logging.NullHandler()
-hn.setLevel(logging.DEBUG)
-logging.getLogger("tornado.access").addHandler(hn)
-logging.getLogger("tornado.access").propagate = False
-
-
-
 
 def exporter():
 
@@ -45,14 +38,14 @@ def exporter():
     lastUpdateTimeStamp = datetime.datetime.now()    # first sets as starting point
     updateInterval      = datetime.timedelta(minutes = 30)
 
-    
+
     while True:
 
         currTime = datetime.datetime.now()
         time4Update = currTime - lastUpdateTimeStamp > updateInterval
 
         if doExport.value == 1 or time4Update:
-            
+
             ## In case only time4Update was true
             doExport.value = 1
 
@@ -133,42 +126,42 @@ def collector(enose, user, host, folder):
 
     ## Counting for automatic plotting
     count = 0
-    
+
     while stopSwitch.value != 0:
-        
+
         ## Getting new sample
         pre = time.time()
         enose.sniff(nsamples=3)
         e = time.time() - pre < 0.005
         if e < 0.004: time.sleep(0.004 - e)
-        
+
         ## Updating the local visualization tool
         count +=1
         if count == 20:
             # updating shared array
             np.save( 'recent.npy', enose.memory[-5000:] )
             count = 0
-        
-        
+
+
         ## Checking if data should be exported
         if stopSwitch.value == 3:
-            
+
             file_name = 'NewData_' + str(sensorname.value) + '_' \
                         + time.strftime("%Y-%m_%d_%H-%M-%S")
-            
+
             ##TO DO checar se arquivo foi salvo e exportado
             np.save( file_name+'.npy', enose.memory )
             outscp = os.system("scp " + file_name + ".npy "
                                + user + "@" + host + ":" + folder)
-            
+
             if outscp == 0:
                 os.system("rm -f "+file_name+".npy")
                 enose.forget()
-                
+
             stopSwitch.value = 1
             doExport.value = -1
-            
-        
+
+
         ## Clock
         key = True
         while key:
@@ -275,79 +268,92 @@ def signal_handler(signal, frame):
     sys.exit(0)
 
 
-signal.signal(signal.SIGINT, signal_handler)
-
-# Defining the name
-sensorname = mp.Value('i')
-sensorname.value = int(sys.argv[-1])
-
-print "Creating the ENose object..."
-enose = EN.ElectronicNose()
-
-print "Preparing environment..."
 
 
 
-## Shared variables
 
-stopSwitch = mp.Value('i')
-stopSwitch.value = 1
+def daemon():
 
-doExport = mp.Value('i')
-doExport.value = 0
-
-
-## Reading configuration file
-configfile = file('Cconfig','r')
-user = configfile.readline().split('\n')[0]
-host = configfile.readline().split('\n')[0]
-folder = configfile.readline().split('\n')[0]
-configfile.close()
+    hn = logging.NullHandler()
+    hn.setLevel(logging.DEBUG)
+    logging.getLogger("tornado.access").addHandler(hn)
+    logging.getLogger("tornado.access").propagate = False
 
 
-## Parallel processes
+    signal.signal(signal.SIGINT, signal_handler)
 
-sniffer = mp.Process(target=collector, args=(enose, user, host, folder))
-sniffer.start()
+    # Defining the name
+    sensorname = mp.Value('i')
+    sensorname.value = int(sys.argv[-1])
 
-exporter = mp.Process(target=exporter)
-exporter.start()
+    print "Creating the ENose object..."
+    enose = EN.ElectronicNose()
 
-
-print( "Starting web service (use port 8888)" )
-is_closing = False
-webserv = mp.Process(target=webservice, args=())
-webserv.start()
-
-
-print "Starting data collection (CTRL+C to stop)"
-print "\n"
+    print "Preparing environment..."
 
 
 
-while True:
+    ## Shared variables
 
-    command = raw_input("\nCommand: [")
+    stopSwitch = mp.Value('i')
+    stopSwitch.value = 1
 
-    if command == "":
-        ctime = datetime.datetime.now()
-        print "Current time stamp: ", ctime
-
-    elif command == "plot" or command == "p":
-        stopSwitch.value = 2
-        pl.close()
-
-    elif command == "export" or command == "e":
-        doExport.value = 1
-        while doExport.value != 0:
-            time.sleep(0.1)
-
-    elif command == "stop" or command == "s":
-        stopSwitch.value = 0
-        sniffer.join()
-        os.system(" rm -f recent.npy plot_recent.png ")
-        break
+    doExport = mp.Value('i')
+    doExport.value = 0
 
 
+    ## Reading configuration file
+    configfile = file('Cconfig','r')
+    user = configfile.readline().split('\n')[0]
+    host = configfile.readline().split('\n')[0]
+    folder = configfile.readline().split('\n')[0]
+    configfile.close()
 
-print "\nThe end, my friend."
+
+    ## Parallel processes
+
+    sniffer = mp.Process(target=collector, args=(enose, user, host, folder))
+    sniffer.start()
+
+    exporter = mp.Process(target=exporter)
+    exporter.start()
+
+
+    print( "Starting web service (use port 8888)" )
+    is_closing = False
+    webserv = mp.Process(target=webservice, args=())
+    webserv.start()
+
+
+    print "Starting data collection (CTRL+C to stop)"
+    print "\n"
+
+
+
+    while True:
+
+        command = raw_input("\nCommand: [")
+
+        if command == "":
+            ctime = datetime.datetime.now()
+            print "Current time stamp: ", ctime
+
+        elif command == "plot" or command == "p":
+            stopSwitch.value = 2
+            pl.close()
+
+        elif command == "export" or command == "e":
+            doExport.value = 1
+            while doExport.value != 0:
+                time.sleep(0.1)
+
+        elif command == "stop" or command == "s":
+            stopSwitch.value = 0
+            sniffer.join()
+            os.system(" rm -f recent.npy plot_recent.png ")
+            break
+
+
+
+    print "\nThe end, my friend."
+    return

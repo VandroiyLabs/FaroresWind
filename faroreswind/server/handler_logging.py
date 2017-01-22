@@ -72,8 +72,8 @@ class loggingHandler(tornado.web.RequestHandler):
 
             miolo += '</tbody></table></div>'
 
-            self.render(rootdir+'/pagess/index.html', title="Server logs", miolo = miolo,
-                        top=file(rootdir+"/pagess/top.html").read(), bottom=file(rootdir+"/pagess/bottom.html").read())
+            self.render(rootdir+'/pages/index.html', title="Server logs", miolo = miolo,
+                        top=file(rootdir+"/pages/top.html").read(), bottom=file(rootdir+"/pages/bottom.html").read())
 
         else:
             logging.warning('Access to server logs from OUTSITE IP: ' + str(self.request.remote_ip) )
