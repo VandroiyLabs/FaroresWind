@@ -27,7 +27,22 @@ from websocket import create_connection
 
 
 
-def exporter():
+## Mutliprocessing Shared variables
+
+# Stop switch
+stopSwitch = mp.Value('i')
+stopSwitch.value = 1
+
+# Exporting flag
+doExport = mp.Value('i')
+doExport.value = 0
+
+# Variable for the name of the nome
+sensorname = mp.Value('i')
+
+
+
+def exporter(host):
 
     ## Counts how many times the server was busy,
     ## then quits...
@@ -64,7 +79,7 @@ def exporter():
 
                     # max trials achieved, quitting trying to contat the server...
                     if busyCount == maxBusyCount:
-                        print "Server not responsive!!"
+                        print "Server not responsive!! (maxBusyCount achieved)"
                         doExport.value = 0
                         busyCount = 0
 
@@ -240,14 +255,14 @@ class ImageHandler(tornado.web.RequestHandler):
         self.write(image)
 
 
-def webservice():
+def webservice(port):
 
     application = tornado.web.Application([
         (r"/", MainHandler),
         (r"/recent.png", ImageHandler),
     ])
 
-    application.listen(8888)
+    application.listen(port)
     tornado.ioloop.PeriodicCallback(try_exit, 100).start()
     tornado.ioloop.IOLoop.instance().start()
 
@@ -283,7 +298,6 @@ def daemon( enoseID ):
     signal.signal(signal.SIGINT, signal_handler)
 
     # Defining the name
-    sensorname = mp.Value('i')
     sensorname.value = int(enoseID)
 
     print "Creating the ENose object..."
@@ -292,36 +306,27 @@ def daemon( enoseID ):
     print "Preparing environment..."
 
 
-
-    ## Shared variables
-
-    stopSwitch = mp.Value('i')
-    stopSwitch.value = 1
-
-    doExport = mp.Value('i')
-    doExport.value = 0
-
-
     ## Reading configuration file
     configfile = file('Cconfig','r')
-    user = configfile.readline().split('\n')[0]
-    host = configfile.readline().split('\n')[0]
+    user   = configfile.readline().split('\n')[0]
+    port   = int(configfile.readline().split('\n')[0])
+    host   = configfile.readline().split('\n')[0]
     folder = configfile.readline().split('\n')[0]
     configfile.close()
-
+    
 
     ## Parallel processes
 
     sniffer = mp.Process(target=collector, args=(enose, user, host, folder))
     sniffer.start()
 
-    exporter = mp.Process(target=exporter)
-    exporter.start()
+    exporter_th = mp.Process(target=exporter, args=(host))
+    exporter_th.start()
 
 
-    print( "Starting web service (use port 8888)" )
+    print( "Starting web service (use port " + str(port) + ")" )
     is_closing = False
-    webserv = mp.Process(target=webservice, args=())
+    webserv = mp.Process(target=webservice, args=([port]))
     webserv.start()
 
 
