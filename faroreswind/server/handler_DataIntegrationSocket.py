@@ -59,7 +59,7 @@ class dataIntegrationHandler(tornado.websocket.WebSocketHandler):
 
     ## THE CLIENT connected
     def open(self):
-        print self.state
+        print( self.state )
         logging.info("DataIntgr. New client connected into DataIntegration from " +str(self.request.remote_ip) )
 
         if self.state == 0:
@@ -88,7 +88,7 @@ class dataIntegrationHandler(tornado.websocket.WebSocketHandler):
 
 
             elif message == "sent":
-                print self.enose_id
+                print( self.enose_id )
                 logging.info("DataIntgr. Client sent data (from " +str(self.request.remote_ip)+ ")" )
 
                 for file in os.listdir(self.tmpFolder):
@@ -124,7 +124,7 @@ class dataIntegrationHandler(tornado.websocket.WebSocketHandler):
         else:
             self.write_message("Wait for your turn. Current status: "
                                     + str(dataIntegrationHandler.state) )
-            print "Client disconnected."
+            print( "Client disconnected." )
 
         return
 

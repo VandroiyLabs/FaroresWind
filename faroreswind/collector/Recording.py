@@ -64,7 +64,7 @@ def exporter(host):
             ## In case only time4Update was true
             doExport.value = 1
 
-            print "\n\nConnecting to server..."
+            print( "\n\nConnecting to server..." )
 
             try:
                 ## Connecting to the socket
@@ -74,19 +74,19 @@ def exporter(host):
 
                 ## Checking server status
                 if response == "Busy":
-                    print "Server is busy."
+                    print( "Server is busy." )
                     busyCount += 1
 
                     # max trials achieved, quitting trying to contat the server...
                     if busyCount == maxBusyCount:
-                        print "Server not responsive!! (maxBusyCount achieved)"
+                        print( "Server not responsive!! (maxBusyCount achieved)" )
                         doExport.value = 0
                         busyCount = 0
 
 
                 ## Server is ready to receive the data
                 elif response == "Free":
-                    print "Server ready to process data."
+                    print( "Server ready to process data." )
 
                     ## Resetting the counter for busy responses
                     busyCount = 0
@@ -94,7 +94,7 @@ def exporter(host):
                     ## Identifying itself for the server, and sending a warning
                     ws.send( "My name: " + str(sensorname.value) )
                     ws.send( "sending" )
-                    print ws.recv()
+                    print( ws.recv() )
 
                     ## Exporting the Data
                     # Sends a message to Enose to export the data
@@ -105,7 +105,7 @@ def exporter(host):
 
                     ## Receing confirmation that the server received the last message
                     ws.send("sent")
-                    print ws.recv()
+                    print( ws.recv() )
 
                     ## Closing the connection
                     ws.close()
@@ -116,10 +116,10 @@ def exporter(host):
                     doExport.value = 0
 
                 else:
-                    print "Server is crazy."
+                    print( "Server is crazy." )
 
             except:
-                print "Server not responsive!!"
+                print( "Server not responsive!!" )
                 doExport.value = 0
 
 
@@ -279,7 +279,7 @@ def try_exit():
 
 
 def signal_handler(signal, frame):
-    print "\nStopping..."
+    print( "\nStopping..." )
     sys.exit(0)
 
 
@@ -300,10 +300,10 @@ def daemon( enoseID ):
     # Defining the name
     sensorname.value = int(enoseID)
 
-    print "Creating the ENose object..."
+    print( "Creating the ENose object..." )
     enose = EN.ElectronicNose()
 
-    print "Preparing environment..."
+    print( "Preparing environment..." )
 
 
     ## Reading configuration file
@@ -313,7 +313,7 @@ def daemon( enoseID ):
     host   = configfile.readline().split('\n')[0]
     folder = configfile.readline().split('\n')[0]
     configfile.close()
-    
+
 
     ## Parallel processes
 
@@ -330,8 +330,8 @@ def daemon( enoseID ):
     webserv.start()
 
 
-    print "Starting data collection (CTRL+C to stop)"
-    print "\n"
+    print( "Starting data collection (CTRL+C to stop)" )
+    print( "\n" )
 
 
 
@@ -341,7 +341,7 @@ def daemon( enoseID ):
 
         if command == "":
             ctime = datetime.datetime.now()
-            print "Current time stamp: ", ctime
+            print( "Current time stamp: " + str(ctime) )
 
         elif command == "plot" or command == "p":
             stopSwitch.value = 2
@@ -360,5 +360,5 @@ def daemon( enoseID ):
 
 
 
-    print "\nThe end, my friend."
+    print( "\nThe end, my friend." )
     return

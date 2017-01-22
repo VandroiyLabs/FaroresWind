@@ -68,7 +68,7 @@ class loggingHandler(tornado.web.RequestHandler):
                         miolo += "<tr " + STYLE + "><td>"+loggerID+"</td><td>"+logLevel+"</td><td>"+logDate+" "+logTime[:8]+"</td><td>"+message+"</td></tr>\n"
 
                 else:
-                    print entry
+                    print( entry )
 
             miolo += '</tbody></table></div>'
 
