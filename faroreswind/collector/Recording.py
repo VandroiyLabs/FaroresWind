@@ -272,7 +272,7 @@ def signal_handler(signal, frame):
 
 
 
-def daemon():
+def daemon( enoseID ):
 
     hn = logging.NullHandler()
     hn.setLevel(logging.DEBUG)
@@ -284,7 +284,7 @@ def daemon():
 
     # Defining the name
     sensorname = mp.Value('i')
-    sensorname.value = int(sys.argv[-1])
+    sensorname.value = int(enoseID)
 
     print "Creating the ENose object..."
     enose = EN.ElectronicNose()
