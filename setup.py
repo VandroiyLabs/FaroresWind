@@ -48,7 +48,8 @@ setup(
     ],
 
     package_data = {
-        '' : ['server/pages/*', 'server/pages/css/*', 'server/pages/js/*', 'server/pages/fonts/*']
+        '' : ['server/pages/*.html',   # this makes GLOB avoid matching folders as files
+                'server/pages/css/*', 'server/pages/js/*', 'server/pages/fonts/*']
     },
 
     install_requires=[],

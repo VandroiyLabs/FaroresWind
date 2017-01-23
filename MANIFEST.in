@@ -1,1 +1,4 @@
 recursive-include faroreswind/server/pages *
+recursive-include faroreswind/server/pages/css *
+recursive-include faroreswind/server/pages/js *
+recursive-include faroreswind/server/pages/fonts *
