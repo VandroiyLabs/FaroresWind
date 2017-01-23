@@ -165,14 +165,30 @@ class db:
         experiments. This function updates this column.
 
         """
+        query  = "SELECT ind_id, enose_id, t0 - (delta0 ||' minute')::INTERVAL,"
+        query += " tc + (deltac ||' minute')::INTERVAL FROM induction WHERE not updated"
+        cursor = self.query(query)
 
-        query  = "UPDATE MEASUREMENT AS M SET M.ind_id = I.ind_id  "
-        query += "FROM INDUCTION AS I "
-        query += "WHERE M.ind_id IS NULL AND "
-        query += "M.enose_id = I.enose_id  AND "
-        query += "M.timestamp BETWEEN t0 - (delta0 ||' minute')::INTERVAL AND tc + (deltac ||' minute')::INTERVAL "
+        inds = "("
+        flag = False
+        separator =""
+        for row in cursor:
+            query  = "UPDATE MEASUREMENT SET ind_id = " + str(row[0]) + " "
+            query += "WHERE enose_id = " + str(row[1]) + " AND "
+            query += "      timestamp BETWEEN '" + str(row[2]) + "' AND '" + str(row[3])+ "' "
 
+            inds += separator+str(row[0])
+            if(not flag):
+                flag = True
+                separator = ","
+            self.query(query)
+
+        inds += ")"
+        query  = "UPDATE INDUCTION SET updated = true  "
+        query += "WHERE ind_id IN  " + inds
         self.query(query)
+
+
         return
 
 
