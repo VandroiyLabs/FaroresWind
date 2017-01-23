@@ -223,30 +223,40 @@ class  updateInductionIndexHandler(tornado.web.RequestHandler):
 
         if self.request.remote_ip[:-2] == self.IPs[0]:
 
-            id = int( self.get_argument('id', '') )
-            logging.info('Updating indexing of ind_id in measurements by IP:' + str(self.request.remote_ip) +
-                         ' ) from ind_id ' +  str(id) )
+            id = self.get_argument('id', '')
+            if(id == ''):
+                logging.info('Updating indexing of ind_id in measurements by IP:' + str(self.request.remote_ip) +' )
+
+                self.db.updateAllInductionIndexingMeasurement()
+
+                logging.info('Updated indexing of ind_id in measurements by IP:' + str(self.request.remote_ip) +' )
+
+            else:
+
+                id = int( id )
+                logging.info('Updating indexing of ind_id in measurements by IP:' + str(self.request.remote_ip) +
+                             ' ) from ind_id ' +  str(id) )
 
 
-            metadata = self.db.getInductionsMetadata(ind_id = id)[0]
+                metadata = self.db.getInductionsMetadata(ind_id = id)[0]
 
-            # pre-buffer
-            timebuffer = datetime.timedelta(minutes=metadata[3])
-            # Initial time to retrieve
-            dtI_b = metadata[1] - timebuffer
-            # post-buffer
-            timebuffer = datetime.timedelta(minutes=metadata[4])
-            # Final time to retrieve
-            dtF_b = metadata[2] + timebuffer
-
-
-            ## Retrieving data from inductions
-            self.db.updateInductionIndexingMeasurement( id, int(metadata[-1]), str(dtI_b), str(dtF_b) )
+                # pre-buffer
+                timebuffer = datetime.timedelta(minutes=metadata[3])
+                # Initial time to retrieve
+                dtI_b = metadata[1] - timebuffer
+                # post-buffer
+                timebuffer = datetime.timedelta(minutes=metadata[4])
+                # Final time to retrieve
+                dtF_b = metadata[2] + timebuffer
 
 
-            logging.info('Updated indexing of ind_id in measurements by IP:' + str(self.request.remote_ip) +
-                            ' ) from ind_id ' +  str(id) )
+                ## Retrieving data from inductions
+                self.db.updateInductionIndexingMeasurement( id, int(metadata[-1]), str(dtI_b), str(dtF_b) )
 
+                logging.info('Updated indexing of ind_id in measurements by IP:' + str(self.request.remote_ip) +
+                                ' ) from ind_id ' +  str(id) )
+
+            ## Returning to list inductions
             self.write('<script>location = "/list_inductions"</script>')
 
 
