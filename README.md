@@ -13,13 +13,13 @@ Currently it only supports Python2.(6,7).
 
 This package is divided into three major parts:
 
-* *Collector*: collects data and periodically sends to the server via
+* [Collector](https://github.com/VandroiyLabs/FaroresWind/tree/master/faroreswind/collector): collects data and periodically sends to the server via
 SSH connection.
 
-* *Server*: integrates data from multiple, remote electronic noses into a
+* [Server](https://github.com/VandroiyLabs/FaroresWind/tree/master/faroreswind/server): integrates data from multiple, remote electronic noses into a
   PostGre database, and creates a webservice.
 
-* *Client*: connects to the server to manage the database and retrieve data.
+* [Client](https://github.com/VandroiyLabs/FaroresWind/tree/master/faroreswind/client): connects to the server to manage the database and retrieve data.
 
 
 ## Installation
