@@ -1,4 +1,4 @@
-# FaroresWind client
+# FaroresWind.Client
 
 This client retrieves data back from the server, either by directly or through SSH.
 
