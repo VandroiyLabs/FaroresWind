@@ -185,7 +185,7 @@ class db:
             flag_m = False
 
             for row_m in cursor_m:
-                if(row_m[0] == 'f'):
+                if(not row_m[0]):
                     flag_m = True
 
             if(flag_m):
