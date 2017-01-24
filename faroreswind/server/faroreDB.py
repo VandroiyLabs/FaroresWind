@@ -165,6 +165,8 @@ class db:
         experiments. This function updates this column.
 
         """
+
+        ##Gets all inductions to update
         query  = "SELECT ind_id, enose_id, t0 - (delta0 ||' minute')::INTERVAL,"
         query += " tc + (deltac ||' minute')::INTERVAL FROM induction WHERE not updated"
         cursor = self.query(query)
@@ -172,21 +174,37 @@ class db:
         inds = "("
         flag = False
         separator =""
-        for row in cursor:
-            query  = "UPDATE MEASUREMENT SET ind_id = " + str(row[0]) + " "
-            query += "WHERE enose_id = " + str(row[1]) + " AND "
-            query += "      timestamp BETWEEN '" + str(row[2]) + "' AND '" + str(row[3])+ "' "
 
-            inds += separator+str(row[0])
-            if(not flag):
-                flag = True
-                separator = ","
-            self.query(query)
+
+        for row in cursor:
+
+            query  = "SELECT max(timestamp) < '" + str(row[3])+ "' "
+            query += "FROM MEASUREMENT where enose_id = "+str(row[1])
+            cursor_m = self.query(query)
+
+            flag_m = False
+
+            for row_m in cursor_m:
+                if(row_m[0] == 'f'):
+                    flag_m = True
+
+            if(flag_m):
+                query  = "UPDATE MEASUREMENT SET ind_id = " + str(row[0]) + " "
+                query += "WHERE enose_id = " + str(row[1]) + " AND "
+                query += "      timestamp BETWEEN '" + str(row[2]) + "' AND '" + str(row[3])+ "' "
+
+                inds += separator+str(row[0])
+                if(not flag):
+                    flag = True
+                    separator = ","
+                self.query(query)
 
         inds += ")"
-        query  = "UPDATE INDUCTION SET updated = true  "
-        query += "WHERE ind_id IN  " + inds
-        self.query(query)
+        ##Checking if has to update inductions
+        if(flag):
+            query  = "UPDATE INDUCTION SET updated = true  "
+            query += "WHERE ind_id IN  " + inds
+            self.query(query)
 
 
         return
