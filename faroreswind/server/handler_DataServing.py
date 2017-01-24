@@ -125,7 +125,7 @@ class viewInductionHandler(tornado.web.RequestHandler):
         pl.close()
 
         image = memdata.getvalue()
-        return
+        return image
 
 
     def get(self):

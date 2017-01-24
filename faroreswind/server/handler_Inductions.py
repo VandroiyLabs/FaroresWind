@@ -225,11 +225,11 @@ class  updateInductionIndexHandler(tornado.web.RequestHandler):
 
             id = self.get_argument('id', '')
             if(id == ''):
-                logging.info('Updating indexing of ind_id in measurements by IP:' + str(self.request.remote_ip) +' )
+                logging.info('Updating indexing of ind_id in measurements by IP:' + str(self.request.remote_ip) )
 
                 self.db.updateAllInductionIndexingMeasurement()
 
-                logging.info('Updated indexing of ind_id in measurements by IP:' + str(self.request.remote_ip) +' )
+                logging.info('Updated indexing of ind_id in measurements by IP:' + str(self.request.remote_ip) )
 
             else:
 
