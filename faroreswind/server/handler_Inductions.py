@@ -47,7 +47,7 @@ class listInductionsHandler(tornado.web.RequestHandler):
 
         sampleid = int( self.get_argument('smp', -1) )
 
-        if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
+        if self.request.remote_ip[:11] in self.IPs :
 
             miolo = '<div class="page-header">' + \
                     '<table class="table table-striped">' + \
@@ -131,7 +131,7 @@ class showInductionHandler(tornado.web.RequestHandler):
 
     def post(self):
 
-        if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
+        if self.request.remote_ip[:11] in self.IPs :
 
             indid = self.get_argument('INDID', '.')
             datei = self.get_argument('datei', '')
@@ -160,7 +160,7 @@ class inputMetadataHandler(tornado.web.RequestHandler):
 
     def get(self):
 
-        if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
+        if self.request.remote_ip[:11] in self.IPs :
             miolo = file(rootdir+'/pages/input_metadata.html').read()
             self.render(rootdir+'/pages/index.html', title="Farore's wind", miolo = miolo,
                         top=file(rootdir+"/pages/top.html").read(), bottom=file(rootdir+"/pages/bottom.html").read())
@@ -183,7 +183,7 @@ class actionMetadataHandler(tornado.web.RequestHandler):
 
     def post(self):
 
-        if self.request.remote_ip[:-2] == self.IPs[0]:
+        if self.request.remote_ip[:11] in self.IPs :
             self.render(rootdir+'/pages/metadata_action.html')
 
             date = self.get_argument('date', '')
@@ -221,7 +221,7 @@ class  updateInductionIndexHandler(tornado.web.RequestHandler):
 
     def get(self):
 
-        if self.request.remote_ip[:-2] == self.IPs[0]:
+        if self.request.remote_ip[:11] in self.IPs :
 
             id = self.get_argument('id', '')
             if(id == ''):

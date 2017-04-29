@@ -36,7 +36,7 @@ class listEnoseConfHandler(tornado.web.RequestHandler):
 
     def get(self):
 
-        if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
+        if self.request.remote_ip[:11] in self.IPs :
 
             miolo = '<div class="page-header">' + \
                     '<table class="table table-striped">' + \
@@ -104,7 +104,7 @@ class actionEnoseConfigHandler(tornado.web.RequestHandler):
 
     def post(self):
 
-        if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
+        if self.request.remote_ip[:11] in self.IPs :
             self.render(rootdir+'/pagess/metadata_action.html')
 
             date = self.get_argument('date', '')

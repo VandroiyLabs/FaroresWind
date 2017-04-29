@@ -130,7 +130,8 @@ class viewInductionHandler(tornado.web.RequestHandler):
 
     def get(self):
 
-        if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
+        
+        if self.request.remote_ip[:11] in self.IPs :
 
             ## Getting input variables
             inductionID = self.get_argument('INDID', '.')
@@ -205,9 +206,9 @@ class showTimeSeriesHandler(tornado.web.RequestHandler):
         return
 
     def post(self):
-
-        if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
-
+        
+        if self.request.remote_ip[:11] in self.IPs :
+            
             datei = self.get_argument('datei', "")
             timei = self.get_argument('timei', "")
             datef = self.get_argument('datef', "")
@@ -248,7 +249,7 @@ class serveFileHandler(tornado.web.RequestHandler):
 
     def get(self):
 
-        if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
+        if self.request.remote_ip[:11] in self.IPs :
 
             ## Getting input variables
             datei = self.get_argument('datei', '')

@@ -30,7 +30,7 @@ class loggingHandler(tornado.web.RequestHandler):
 
     def get(self):
 
-        if self.request.remote_ip[:-2] == self.IPs[0] or self.request.remote_ip[:7] == self.IPs[1]:
+        if self.request.remote_ip[:11] in self.IPs :
 
             logfile    = open(self.filename).read()
             logEntries = logfile.split('\n')

@@ -47,3 +47,10 @@ class client:
         jsonDump = json.loads( str( gpg.decrypt(msg, passphrase=self.config['gpg_passphrase']) ) )
 
         return np.array(jsonDump)
+
+
+    def retrieveMetadata():
+
+
+        
+        return
